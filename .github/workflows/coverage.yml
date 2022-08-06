@@ -28,7 +28,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pytest-cov mariadb
+          pip install pytest-cov mariadb python-dateutil
       - name: Generate coverage report
         run: python -m pytest --cov=shellyhtcollector --cov-report=xml test/
       - name: Upload coverage to Codecov
