@@ -1,4 +1,7 @@
 
+![Test](https://github.com/varkenvarken/shellyhtcollector2/actions/workflows/test.yml/badge.svg)
+![CodeQL](https://github.com/varkenvarken/shellyhtcollector2/actions/workflows/codeql-analysis.yml/badge.svg)
+![Black](https://github.com/varkenvarken/shellyhtcollector2/actions/workflows/black.yml/badge.svg)
 # Shellyhtcollector2
 
 Gather incoming temperature and humidity updates from a small swarm of Shellyht devices.
