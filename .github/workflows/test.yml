@@ -31,3 +31,5 @@ jobs:
           pip install tox tox-gh-actions mariadb
       - name: Test with tox
         run: tox
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
