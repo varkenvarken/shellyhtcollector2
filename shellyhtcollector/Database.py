@@ -17,7 +17,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220806152124
+#  version: 20220806155941
 
 import re
 import mariadb
@@ -27,14 +27,16 @@ from dateutil import tz
 
 class Measurement:
     """
-    _summary_
+    Represents a measurement of temperature and humidity by a station.
+
+    Args:
+        stationid (str): station identification. Must contain only 1 or more alphnumeric characters or hyphens
+        temperature (float): _description_
+        humidity (float): _description_
 
     Raises:
-        ValueError: _description_
-        e: _description_
+        ValueError: if the stationid argument contains illegal characters or temperature or humidity arguments are not compatible to floats
 
-    Returns:
-        _type_: _description_
     """
 
     idchars = re.compile(r"^[a-z01-9-]+$", re.IGNORECASE)
@@ -47,7 +49,7 @@ class Measurement:
         try:
             self.temperature = float(temperature)
             self.humidity = float(humidity)
-        except TypeError as e:
+        except ValueError as e:
             e.args = (
                 "temperature and humidity arguments most be floats or convertible to floats",
             )
