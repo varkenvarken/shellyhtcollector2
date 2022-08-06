@@ -1,12 +1,12 @@
 import argparse
-from datetime import datetime, timedelta
+from datetime import datetime
 from sys import stderr, exit
 from os import environ
 
 from dateutil import tz
 
-from .shellyhtcollector.Server import Interceptor
-from .shellyhtcollector.Database import MeasurementDatabase
+from .Server import Interceptor
+from .Database import MeasurementDatabase
 
 now = datetime.now(tz=tz.tzlocal())
 
@@ -50,4 +50,4 @@ print(f"starting server, listening on {args.bind}:{args.port}", file=stderr, flu
 while True:  # apparently serve_forever() does return on a 104 error
     server = Interceptor((args.bind, args.port), db)
     server.serve_forever()
-    print("restarting server", file=stderr, flush=True)
+    print("restarting server on a 104 error", file=stderr, flush=True)

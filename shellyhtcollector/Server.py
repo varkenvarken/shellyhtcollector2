@@ -17,13 +17,14 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220805082454
+#  version: 20220806080222
 
 import re
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 from .Database import Measurement
+
 
 class InterceptorHandlerFactory:
     """
@@ -63,5 +64,7 @@ class InterceptorHandlerFactory:
 
 
 class Interceptor(ThreadingHTTPServer):
+    allow_reuse_address = True
+
     def __init__(self, server_address, db):
         super().__init__(server_address, InterceptorHandlerFactory.getHandler(db))

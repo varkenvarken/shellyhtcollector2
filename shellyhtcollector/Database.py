@@ -17,7 +17,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220805095028
+#  version: 20220806105227
 
 import re
 import mariadb
@@ -203,19 +203,17 @@ class MeasurementDatabase:
         return self.retrieveMeasurements(stationid, start, end)
 
     def names(self, stationid, name):
-        print(stationid, name)
         if stationid == "*":
-            print("list")
-            with self.connection as conn:
-                cursor = conn.cursor(dictionary=True)
-                cursor.execute("SELECT * FROM StationidToName")
-                return [(row[0], row[1]) for row in cursor.fetchall()]
+            conn = self.connection
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute("SELECT * FROM StationidToName")
+            return [(row[0], row[1]) for row in cursor.fetchall()]
         else:
-            print("replace")
-            with self.connection as conn:
-                cursor = conn.cursor()
-                cursor.execute(
-                    "INSERT INTO StationidToName(Stationid, Name) VALUES(?,?)",
-                    (stationid, name),
-                )
-                conn.commit()
+            conn = self.connection
+            cursor = conn.cursor()
+            cursor.execute(
+                "REPLACE StationidToName(Stationid, Name) VALUES(?,?)",
+                (stationid, name),
+            )
+            conn.commit()
+            return []
