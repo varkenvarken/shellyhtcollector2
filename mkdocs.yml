@@ -1,0 +1,41 @@
+site_name: Shelly HT Collector
+site_description: Documentation for the htcollector library.
+site_url: https://varkenvarken.github.io/shellyhtcollector2/
+site_dir: docs
+repo_url: https://github.com/varkenvarken/shellyhtcollector2
+repo_name: shellyhtcollector2
+edit_uri: ""
+
+copyright: Copyright &copy; 2022 Michel Anders (varkenvarken)
+
+docs_dir: documentation
+
+theme:
+    name: 'material'
+    palette:
+      primary: purple
+    font:
+      text: 'Gentium Basic'
+    logo: assets/logo.svg
+    favicon: assets/favicon.png
+
+nav:
+  - Home: 'README.md'
+  - API: 'mkapi/apidoc/shellyhtcollector'
+
+markdown_extensions:
+  - admonition
+  - codehilite
+  - tables
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
+plugins:
+  - search # necessary for search to work
+  - mkapi
+
+extra_css:
+  - stylesheets/extra.css

@@ -7,9 +7,6 @@
 
 Gather incoming temperature and humidity updates from a small swarm of Shellyht devices.
 
-## API documentation
-
-[Available on the GitHub pages of this repo](https://varkenvarken.github.io/shellyhtcollector2/apidoc/shellyhtcollector/)
 ## Architecture overview
 
 ```mermaid
@@ -44,9 +41,6 @@ or alternatively, download it from GitHub
 ```bash
 git clone https://github.com/varkenvarken/shellyhtcollector2.git
 ```
-
-## Running the server
-
 Assuming you have MariaDB running on the same machine with a database (schema) `shellyht`,
 and that the user defined in the environment variable DBUSER has enough privileges to create a tables,
 the following command will create the necessary tables if not yet present and start listening on port 1883 for incoming connections:

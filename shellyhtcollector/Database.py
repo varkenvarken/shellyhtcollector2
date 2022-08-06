@@ -17,7 +17,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220806105227
+#  version: 20220806152124
 
 import re
 import mariadb
@@ -26,10 +26,20 @@ from dateutil import tz
 
 
 class Measurement:
+    """
+    _summary_
+
+    Raises:
+        ValueError: _description_
+        e: _description_
+
+    Returns:
+        _type_: _description_
+    """
+
     idchars = re.compile(r"^[a-z01-9-]+$", re.IGNORECASE)
 
     def __init__(self, stationid, temperature, humidity):
-        print(stationid, temperature, humidity)
         if re.match(self.idchars, stationid):
             self.stationid = stationid
         else:
@@ -48,6 +58,20 @@ class Measurement:
 
 
 class MeasurementDatabase:
+    """
+    Implements a databases containing measurements and station descriptions.
+
+    The backing database should be a MariaDB database server.
+
+    Args:
+        database (str): name of the database
+        host (str): hostname or ip-address of teh database server
+        port (str): port that the database server is listening on
+        user (str): username of a user with access privileges to the database
+        password (str): password of the user
+
+    """
+
     def __init__(self, database, host, port, user, password):
         self.connection = mariadb.connect(
             user=user, password=password, host=host, database=database
@@ -203,6 +227,16 @@ class MeasurementDatabase:
         return self.retrieveMeasurements(stationid, start, end)
 
     def names(self, stationid, name):
+        """
+        Insert or replace a name for a stationid, or return a list of all stations._
+
+        Args:
+            stationid (str): the shellyht station id or an asterisk '*'
+            name (str)): the name to associate with a stationid (ignored if stationid is '*')
+
+        Returns:
+            list: either an empty list when inserting or replacing or a list of tuples(stationid, name)
+        """
         if stationid == "*":
             conn = self.connection
             cursor = conn.cursor(dictionary=True)

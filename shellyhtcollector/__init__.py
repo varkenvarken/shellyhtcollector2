@@ -17,4 +17,29 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220805082859
+#  version: 20220806152902
+# pylnlib : a package to communicate with a model railroad controller using the LocoNet® protocol
+#
+# (c) 2022 Michel Anders (varkenvarken)
+#
+# License: GPL 3, see file LICENSE
+#
+# Version: 20220806152902
+
+"""
+This package can be invoked as a module.
+
+Example:
+```bash
+nohup python -m shellyhtcollector -p 1883 &
+```
+
+If invoked this way, it will start listening for data on port 1883.
+
+For more info run it with the -- help option
+
+```bash
+python -m shellyhtcollector --help
+```
+
+"""

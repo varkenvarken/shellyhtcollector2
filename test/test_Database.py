@@ -18,5 +18,10 @@ def database():
 class TestNames:
     def test_names_insert(self, database):
         assert database.names("abcdef", "testroom") == []
+
     def test_names_list(self, database):
-            assert database.names("*", "") == [("abcdef", "testroom")]
+        assert database.names("*", "") == [("abcdef", "testroom")]
+
+    def test_names_replace(self, database):
+        assert database.names("abcdef", "testroom") == []
+        assert database.names("*", "") == [("abcdef", "testroom")]
