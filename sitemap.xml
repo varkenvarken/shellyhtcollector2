@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+         <loc>https://varkenvarken.github.io/shellyhtcollector2/</loc>
+         <lastmod>2022-08-06</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://varkenvarken.github.io/shellyhtcollector2/apidoc/shellyhtcollector.Server/</loc>
+         <lastmod>2022-08-06</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://varkenvarken.github.io/shellyhtcollector2/apidoc/shellyhtcollector.Utils/</loc>
+         <lastmod>2022-08-06</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://varkenvarken.github.io/shellyhtcollector2/apidoc/source/shellyhtcollector.Server/</loc>
+         <lastmod>2022-08-06</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://varkenvarken.github.io/shellyhtcollector2/apidoc/source/shellyhtcollector.Utils/</loc>
+         <lastmod>2022-08-06</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+</urlset>
