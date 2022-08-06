@@ -406,7 +406,7 @@
 <span class="c1">#  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,</span>
 <span class="c1">#  MA 02110-1301, USA.</span>
 <span class="c1">#</span>
-<span class="c1">#  version: 20220806152124</span>
+<span class="c1">#  version: 20220806155941</span>
 
 <span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">import</span> <span class="nn">mariadb</span>
@@ -416,14 +416,16 @@
 
 <span class="k">class</span> <span class="nc">Measurement</span><span class="p">:</span><span id="shellyhtcollector.Database.Measurement"></span><a class="mkapi-docs-link" title="shellyhtcollector.Database.Measurement" href="../../shellyhtcollector.Database/#shellyhtcollector.Database.Measurement">DOCS</a>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    _summary_</span>
+<span class="sd">    Represents a measurement of temperature and humidity by a station.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        stationid (str): station identification. Must contain only 1 or more alphnumeric characters or hyphens</span>
+<span class="sd">        temperature (float): _description_</span>
+<span class="sd">        humidity (float): _description_</span>
 
 <span class="sd">    Raises:</span>
-<span class="sd">        ValueError: _description_</span>
-<span class="sd">        e: _description_</span>
+<span class="sd">        ValueError: if the stationid argument contains illegal characters or temperature or humidity arguments are not compatible to floats</span>
 
-<span class="sd">    Returns:</span>
-<span class="sd">        _type_: _description_</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">idchars</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^[a-z01-9-]+$&quot;</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
@@ -436,7 +438,7 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">temperature</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">temperature</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">humidity</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">humidity</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">TypeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="n">e</span><span class="o">.</span><span class="n">args</span> <span class="o">=</span> <span class="p">(</span>
                 <span class="s2">&quot;temperature and humidity arguments most be floats or convertible to floats&quot;</span><span class="p">,</span>
             <span class="p">)</span>

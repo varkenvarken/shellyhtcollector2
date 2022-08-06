@@ -496,8 +496,8 @@
         </div>
       <div class="mkapi-section-body classes"><ul class="mkapi-items">
 <li class="class"><code class="mkapi-item-name"><a href="#shellyhtcollector.Database.Measurement">Measurement</a></code>
-<span class="mkapi-item-type">(_type_)</span>
-<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description"><em>summary</em><a class="mkapi-src-link" href="../source/shellyhtcollector.Database/#shellyhtcollector.Database.Measurement" title="Source for shellyhtcollector.Database.Measurement">&lt;/&gt;</a></span></li>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Represents a measurement of temperature and humidity by a station.<a class="mkapi-src-link" href="../source/shellyhtcollector.Database/#shellyhtcollector.Database.Measurement" title="Source for shellyhtcollector.Database.Measurement">&lt;/&gt;</a></span></li>
 
 <li class="class"><code class="mkapi-item-name"><a href="#shellyhtcollector.Database.MeasurementDatabase">MeasurementDatabase</a></code>
 
@@ -522,7 +522,27 @@
 </div>
 <div class="mkapi-docstring">
 <div class="mkapi-section">
-      <div class="mkapi-section-body"><p><em>summary</em></p></div>
+      <div class="mkapi-section-body"><p>Represents a measurement of temperature and humidity by a station.</p></div>
+    </div>
+  <div class="mkapi-section parameters">
+      <div class="mkapi-section-name parameters">
+          <span class="mkapi-section-name-body parameters">Parameters</span> 
+        </div>
+      <div class="mkapi-section-body parameters"><ul class="mkapi-items">
+<li><code class="mkapi-item-name">stationid</code>
+<span class="mkapi-item-type">(str)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">station identification. Must contain only 1 or more alphnumeric characters or hyphens</span></li>
+
+<li><code class="mkapi-item-name">temperature</code>
+<span class="mkapi-item-type">(float)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description"><em>description</em></span></li>
+
+<li><code class="mkapi-item-name">humidity</code>
+<span class="mkapi-item-type">(float)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description"><em>description</em></span></li>
+
+
+</ul></div>
     </div>
   <div class="mkapi-section raises">
       <div class="mkapi-section-name raises">
@@ -531,20 +551,10 @@
       <div class="mkapi-section-body raises"><ul class="mkapi-items">
 <li><code class="mkapi-item-name">ValueError</code>
 
-<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description"><em>description</em></span></li>
-
-<li><code class="mkapi-item-name">e</code>
-
-<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description"><em>description</em></span></li>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">if the stationid argument contains illegal characters or temperature or humidity arguments are not compatible to floats</span></li>
 
 
 </ul></div>
-    </div>
-  <div class="mkapi-section returns">
-      <div class="mkapi-section-name returns">
-          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(_type_)</span>
-        </div>
-      <div class="mkapi-section-body returns"><p><em>description</em></p></div>
     </div>
   </div>
 
