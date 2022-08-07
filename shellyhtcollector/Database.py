@@ -17,7 +17,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220807130116
+#  version: 20220807130406
 
 import re
 import mariadb
@@ -222,6 +222,15 @@ class MeasurementDatabase:
         return rows
 
     def lastMeasurementsAsHTML(self, stationid):
+        """
+        Return the last measurement data for a station or all stations in HTML format.
+
+        Args:
+            stationid (str): the stationid or an asterisk '*'
+
+        Returns:
+            str: an HTML page
+        """
         ms = self.retrieveLastMeasurement(stationid)
         mdivs = "\n".join(
             f"""
