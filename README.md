@@ -3,6 +3,8 @@
 [![codecov](https://codecov.io/gh/varkenvarken/shellyhtcollector2/branch/master/graph/badge.svg?token=PPTB9RZQA3)](https://codecov.io/gh/varkenvarken/shellyhtcollector2)
 ![CodeQL](https://github.com/varkenvarken/shellyhtcollector2/actions/workflows/codeql-analysis.yml/badge.svg)
 ![Black](https://github.com/varkenvarken/shellyhtcollector2/actions/workflows/black.yml/badge.svg)
+[![Versions](https://img.shields.io/pypi/v/htcollector)](https://pypi.org/project/htcollector/)
+![Python versions](https://img.shields.io/pypi/pyversions/htcollector)
 # Shellyhtcollector2
 
 Gather incoming temperature and humidity updates from a small swarm of Shellyht devices.
