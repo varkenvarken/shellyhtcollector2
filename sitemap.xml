@@ -11,6 +11,11 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://varkenvarken.github.io/shellyhtcollector2/apidoc/shellyhtcollector.Graph/</loc>
+         <lastmod>2022-08-07</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://varkenvarken.github.io/shellyhtcollector2/apidoc/shellyhtcollector.Server/</loc>
          <lastmod>2022-08-07</lastmod>
          <changefreq>daily</changefreq>
@@ -27,6 +32,11 @@
     </url>
     <url>
          <loc>https://varkenvarken.github.io/shellyhtcollector2/apidoc/source/shellyhtcollector.Database/</loc>
+         <lastmod>2022-08-07</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://varkenvarken.github.io/shellyhtcollector2/apidoc/source/shellyhtcollector.Graph/</loc>
          <lastmod>2022-08-07</lastmod>
          <changefreq>daily</changefreq>
     </url>
