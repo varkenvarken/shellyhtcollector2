@@ -7,7 +7,7 @@ long_description = (this_directory / "README.md").read_text()
 
 setup(
     name="htcollector",
-    version="0.0.2",
+    version="0.0.3",
     description="Tools to log updates from Shelly HT devices",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -21,6 +21,7 @@ setup(
         "mariadb",
         "python-dateutil",
     ],
+    extras_require={"graph": ["numpy", "matplotlib"]},
     zip_safe=False,
     classifiers=[
         "Development Status :: 3 - Alpha",

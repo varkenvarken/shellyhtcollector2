@@ -15,46 +15,44 @@ blue2red = ListedColormap(
 )
 
 
-class Graph:
-    def __init__(self, db):
-        self.db = db
-
-    def graph(
-        self,
-        stationid,
-        starttime,
-        endtime,
-        title="Indoor measurements",
-        tcolor="#d22c2b",
-        hcolor="#2c2cd2",
-        font="Amaranth",
-        fontcolor="#d22c2b",
-        **kwargs,
-    ):
-        data = self.db.retrieveMeasurements(stationid, starttime, endtime)
-
-        # duplicate last entry and set time to endtime to extend last measurement
-        data.append(list(data[-1]))
-        data[-1][0] = endtime
-        data = np.array(data)
-        time = data[:, 0]
-        temp = data[:, 2]
-        hum = data[:, 3]
-        fig = plt.figure(**kwargs)
-        plt.title(
-            f"{title} (now: {temp[-1]:.1f}°C / {hum[-1]:.1f}% )",
-            fontfamily=font,
-            color=fontcolor,
-        )
-        ax = fig.axes[0]
-        ax.set_xlim(left=starttime, right=endtime)
-        ax.set_ylabel("Temp (°C)", color=tcolor)
-        ax.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M"))
-        ax.set_facecolor(kwargs["facecolor"])
-        ax.plot(time, temp, color="red")
-        ax2 = ax.twinx()
-        ax2.set_ylabel("Humidity (%)", color=hcolor)
-        ax2.plot(time, hum, color="blue")
-        ax2.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M"))
-        fig.autofmt_xdate()
-        return fig
+def graph(
+    db,
+    fname,
+    stationid,
+    starttime,
+    endtime,
+    title="Indoor measurements",
+    facecolor="#eedddd",
+    tcolor="#d22c2b",
+    hcolor="#2c2cd2",
+    font="Amaranth",
+    fontcolor="#d22c2b",
+    **kwargs,
+):
+    data = db.retrieveMeasurements(stationid, starttime, endtime)
+    # duplicate last entry and set time to endtime to extend last measurement
+    data.append(data[-1])
+    data[-1]['timestamp'] = endtime
+    data = [ (d["timestamp"],d["stationid"],d["temperature"],d["humidity"]) for d in data]
+    data = np.array(data)
+    time = data[:, 0]
+    temp = data[:, 2]
+    hum = data[:, 3]
+    fig = plt.figure(**kwargs)
+    plt.title(
+        f"{title} (now: {temp[-1]:.1f}°C / {hum[-1]:.1f}% )",
+        fontfamily=font,
+        color=fontcolor,
+    )
+    ax = fig.axes[0]
+    ax.set_xlim(left=starttime, right=endtime)
+    ax.set_ylabel("Temp (°C)", color=tcolor)
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M"))
+    ax.set_facecolor(facecolor)
+    ax.plot(time, temp, color=tcolor)
+    ax2 = ax.twinx()
+    ax2.set_ylabel("Humidity (%)", color=hcolor)
+    ax2.plot(time, hum, color=hcolor)
+    ax2.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M"))
+    fig.autofmt_xdate()
+    plt.savefig(fname)
