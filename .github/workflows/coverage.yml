@@ -28,7 +28,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pytest-cov mariadb python-dateutil
+          pip install pytest-cov mariadb python-dateutil numpy matplotlib
       - name: spin up database
         run: |
           docker run --detach --name test-mariadb --env MARIADB_DATABASE=shellyht --env MARIADB_USER=test-user --env MARIADB_PASSWORD=test_secret --env MARIADB_ROOT_PASSWORD=my-secret-pw -p 3306:3306  mariadb:latest
