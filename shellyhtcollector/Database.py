@@ -17,7 +17,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220806155941
+#  version: 20220807082644
 
 import re
 import mariadb
@@ -97,6 +97,14 @@ class MeasurementDatabase:
         )
 
     def storeMeasurement(self, measurement):
+        """
+        Store a measurement into the database.
+
+        Args:
+            measurement (Measurement): the measurement
+
+        Measurements do not contain timestamps, the are added automatically.
+        """
         cursor = self.connection.cursor()
         cursor.execute(
             """INSERT INTO Measurements(Stationid, Temperature, Humidity)
@@ -108,7 +116,9 @@ class MeasurementDatabase:
             ),
         )
         self.connection.commit()
+        n = cursor.rowcount
         cursor.close()
+        return n
 
     def retrieveMeasurements(self, stationid, starttime, endtime=None):
         # get the data
@@ -157,6 +167,15 @@ class MeasurementDatabase:
         return rows
 
     def retrieveLastMeasurement(self, stationid):
+        """
+        Return the last measurement data for a station or all stations.
+
+        Args:
+            stationid (str): the stationid or an asterisk '*'
+
+        Returns:
+            list: a list of dict objects, one for each station
+        """
         if stationid == "*":
             rows = []
             cursor = self.connection.cursor(dictionary=True)
@@ -173,7 +192,7 @@ class MeasurementDatabase:
                 (stationid,),
             )
             rows = cursor.fetchall()
-
+            print(rows)
             rows = [
                 {
                     "time": row[0],  # .replace(tzinfo=utc).astimezone(ltz),
