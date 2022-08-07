@@ -29,6 +29,22 @@ def graph(
     fontcolor="#d22c2b",
     **kwargs,
 ):
+    """
+    Generate a temeprature and humidity graph for a station.
+
+    Args:
+        db (MeasurementDatabase): the measurement database
+        fname (str): filename or "-" for stdout
+        stationid (str): the station id
+        starttime (datetime): the start time
+        endtime (datetime): the end time
+        title (str, optional): the title of the graph. Defaults to "Indoor measurements".
+        facecolor (str, optional): background color of the graph. Defaults to "#eedddd".
+        tcolor (str, optional): color for line and label of the temperature. Defaults to "#d22c2b".
+        hcolor (str, optional): color for line and label of the humidity. Defaults to "#2c2cd2".
+        font (str, optional): font for labels and titles. Defaults to "Amaranth".
+        fontcolor (str, optional): color of the labels and titles. Defaults to "#d22c2b".
+    """
     data = db.retrieveMeasurements(stationid, starttime, endtime)
     # duplicate last entry and set time to endtime to extend last measurement
     data.append(data[-1])
