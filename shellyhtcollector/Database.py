@@ -17,7 +17,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220807082644
+#  version: 20220807130116
 
 import re
 import mariadb
@@ -120,47 +120,61 @@ class MeasurementDatabase:
         cursor.close()
         return n
 
-    def retrieveMeasurements(self, stationid, starttime, endtime=None):
-        # get the data
+    def retrieveMeasurements(
+        self, stationid, starttime: datetime, endtime: datetime = None
+    ):
+        """
+        Get measurements inside a given timeframe.
+
+        Args:
+            stationid (str): stationid or asterisk '*'
+            starttime (datetime): starttime of measurement period (inclusive)
+            endtime (datetime, optional): endtime of measurement period (inclusive) or None for now. Defaults to None.
+
+        Returns:
+            list: of dict(timestamp:t, stationid:id, temperature:t, humidity:h)
+        """
+        # timestamp in MariaDB are stored in UTC
+        endtime = (
+            endtime.astimezone(tz.UTC)
+            if endtime is not None
+            else datetime.now(tz=tz.UTC)
+        )
+        starttime = starttime.astimezone(tz.UTC)
         if stationid == "*":
-            rows = [
-                row
-                for row in self.connection.cursor(dictionary=True).execute(
-                    """SELECT Timestamp as 'Timestamp [timestamp]', Stationid, Temperature, Humidity
-            FROM Measurements
-            WHERE datetime(Timestamp) >= datetime(?) AND datetime(Timestamp) <= datetime(?)""",
-                    (
-                        starttime,
-                        endtime if endtime is not None else tz.tzlocal(),
-                    ),
-                )
-            ]
-        else:
-            rows = [
-                row
-                for row in self.connection.cursor(dictionary=True).execute(
-                    """SELECT Timestamp as 'Timestamp [timestamp]', Stationid, Temperature, Humidity
-            FROM Measurements
-            WHERE Stationid = ? AND datetime(Timestamp) >= datetime(?) AND datetime(Timestamp) <= datetime(?)""",
-                    (
-                        stationid,
-                        starttime,
-                        endtime if endtime is not None else tz.tzlocal(),
-                    ),
-                )
-            ]
-
-        # convert the timestamps to the local timezone
-        utc = tz.tzutc()  # sqlite timestamps are stored in UTC but without tz info
-        ltz = tz.tzlocal()
-
-        rows = [
-            (
-                row["Timestamp"],  # .replace(tzinfo=utc).astimezone(ltz),
-                row["Stationid"],
-                row["Temperature"],
-                row["Humidity"],
+            cursor = self.connection.cursor(dictionary=True)
+            cursor.execute(
+                f"""SELECT Timestamp, Stationid, Temperature, Humidity
+                        FROM Measurements
+                        WHERE Timestamp >= ? AND Timestamp <= ?""",
+                (
+                    starttime,
+                    endtime,
+                ),
             )
+            rows = cursor.fetchall()
+        else:
+            cursor = self.connection.cursor(dictionary=True)
+            cursor.execute(
+                f"""SELECT Timestamp, Stationid, Temperature, Humidity
+                        FROM Measurements
+                        WHERE Stationid = ? AND Timestamp >= ? AND Timestamp <= ?""",
+                (
+                    stationid,
+                    starttime,
+                    endtime,
+                ),
+            )
+            rows = cursor.fetchall()
+
+        # mariadb / mysql timestamps are in UTC
+        rows = [
+            {
+                "timestamp": row[0].astimezone(tz.tzlocal()),
+                "stationid": row[1],
+                "temperature": row[2],
+                "humidity": row[3],
+            }
             for row in rows
         ]
 
@@ -184,6 +198,7 @@ class MeasurementDatabase:
                 rows.extend(self.retrieveLastMeasurement(row[0]))
         else:
             # get the data
+            # TODO return data with name == "unknown" if mapping is not available
             cursor = self.connection.cursor(dictionary=True)
             cursor.execute(
                 """SELECT Timestamp as 'Timestamp [timestamp]', Measurements.Stationid, Name, Temperature, Humidity
