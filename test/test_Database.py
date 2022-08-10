@@ -118,4 +118,3 @@ class TestMeasurements:
         database.storeMeasurement(Database.Measurement("test-100002", 15, 45))
         html = database.lastMeasurementsAsHTML("*")
         assert type(html) is str
-        

@@ -8,6 +8,7 @@ from pathlib import Path
 from shellyhtcollector.Graph import graph
 from shellyhtcollector.Database import MeasurementDatabase, Measurement
 
+
 @pytest.fixture(scope="class")
 def database():
     db = MeasurementDatabase(
@@ -18,6 +19,7 @@ def database():
         password="test_secret",
     )
     return db
+
 
 class TestGraph:
     def test_graph(self, database, tmp_path, capsys):
@@ -33,8 +35,7 @@ class TestGraph:
         fivesecondsago = now - timedelta(seconds=5)
 
         fname = tmp_path / "graph.png"
-        graph(database,fname,stationid,fivesecondsago,now)
+        graph(database, fname, stationid, fivesecondsago, now)
         captured = capsys.readouterr()
         print(captured.out)
         assert Path.is_file(fname)
-
