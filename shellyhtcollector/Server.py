@@ -17,7 +17,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220806080222
+#  version: 20220810152012
 
 import re
 from http import HTTPStatus
@@ -55,7 +55,6 @@ class InterceptorHandlerFactory:
                     except Exception as e:
                         print(e)
                         self.send_response(HTTPStatus.INTERNAL_SERVER_ERROR)
-                        raise
                 else:
                     self.send_response(HTTPStatus.FORBIDDEN)
                 self.end_headers()

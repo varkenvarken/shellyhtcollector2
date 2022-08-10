@@ -17,7 +17,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220807130406
+#  version: 20220810151531
 
 import re
 import mariadb
@@ -80,10 +80,11 @@ class MeasurementDatabase:
         )
         self.connection.auto_reconnect = True
 
+        # the timestamp is configured for millisecond resolution
         cursor = self.connection.cursor()
         cursor.execute(
             """CREATE TABLE IF NOT EXISTS Measurements(
-            Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+            Timestamp DATETIME(3) DEFAULT CURRENT_TIMESTAMP,
             Stationid VARCHAR(100),
             Temperature REAL,
             Humidity REAL);"""
@@ -134,13 +135,14 @@ class MeasurementDatabase:
         Returns:
             list: of dict(timestamp:t, stationid:id, temperature:t, humidity:h)
         """
-        # timestamp in MariaDB are stored in UTC
+        # timestamps in MariaDB are stored in UTC
         endtime = (
             endtime.astimezone(tz.UTC)
             if endtime is not None
             else datetime.now(tz=tz.UTC)
         )
         starttime = starttime.astimezone(tz.UTC)
+        starttime = starttime.replace(microsecond = (starttime.microsecond // 1000 )* 1000)  # round down to millis
         if stationid == "*":
             cursor = self.connection.cursor(dictionary=True)
             cursor.execute(
@@ -154,6 +156,7 @@ class MeasurementDatabase:
             )
             rows = cursor.fetchall()
         else:
+            print("timestamps",starttime, endtime)
             cursor = self.connection.cursor(dictionary=True)
             cursor.execute(
                 f"""SELECT Timestamp, Stationid, Temperature, Humidity
@@ -167,10 +170,10 @@ class MeasurementDatabase:
             )
             rows = cursor.fetchall()
 
-        # mariadb / mysql timestamps are in UTC
+        # mariadb / mysql timestamps are in UTC but returned as 'naive' datetime objects
         rows = [
             {
-                "timestamp": row[0].astimezone(tz.tzlocal()),
+                "timestamp": row[0].replace(tzinfo=tz.UTC).astimezone(tz.tzlocal()),
                 "stationid": row[1],
                 "temperature": row[2],
                 "humidity": row[3],
@@ -208,9 +211,10 @@ class MeasurementDatabase:
             )
             rows = cursor.fetchall()
             print(rows)
+            # mariadb / mysql timestamps are in UTC but returned as 'naive' datetime objects
             rows = [
                 {
-                    "time": row[0],  # .replace(tzinfo=utc).astimezone(ltz),
+                    "time": row[0].replace(tzinfo=tz.UTC).astimezone(tz.tzlocal()),
                     "deltat": datetime.now() - row[0],
                     "stationid": row[1],
                     "name": row[2],
