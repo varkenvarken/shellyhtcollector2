@@ -17,11 +17,8 @@ setup(
     license="GPLv3",
     packages=["shellyhtcollector"],
     python_requires=">=3.8",
-    install_requires=[
-        "mariadb",
-        "python-dateutil",
-    ],
-    extras_require={"graph": ["numpy", "matplotlib"]},
+    install_requires=["mariadb==1.1.4", "python-dateutil==2.8.2"],
+    extras_require={"graph": ["numpy==1.23.1", "matplotlib==3.5.3"]},
     zip_safe=False,
     classifiers=[
         "Development Status :: 3 - Alpha",
