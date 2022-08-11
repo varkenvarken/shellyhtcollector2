@@ -48,8 +48,10 @@ def graph(
     data = db.retrieveMeasurements(stationid, starttime, endtime)
     # duplicate last entry and set time to endtime to extend last measurement
     data.append(data[-1])
-    data[-1]['timestamp'] = endtime
-    data = [ (d["timestamp"],d["stationid"],d["temperature"],d["humidity"]) for d in data]
+    data[-1]["timestamp"] = endtime
+    data = [
+        (d["timestamp"], d["stationid"], d["temperature"], d["humidity"]) for d in data
+    ]
     data = np.array(data)
     time = data[:, 0]
     temp = data[:, 2]

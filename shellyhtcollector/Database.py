@@ -17,7 +17,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220810164433
+#  version: 20220811145307
 
 import re
 import mariadb
@@ -110,11 +110,7 @@ class MeasurementDatabase:
         cursor.execute(
             """INSERT INTO Measurements(Stationid, Temperature, Humidity)
                                     VALUES (?,?,?)""",
-            (
-                measurement.stationid,
-                measurement.temperature,
-                measurement.humidity,
-            ),
+            (measurement.stationid, measurement.temperature, measurement.humidity),
         )
         self.connection.commit()
         n = cursor.rowcount
@@ -142,31 +138,26 @@ class MeasurementDatabase:
             else datetime.now(tz=tz.UTC)
         )
         starttime = starttime.astimezone(tz.UTC)
-        starttime = starttime.replace(microsecond = (starttime.microsecond // 1000 )* 1000)  # round down to millis
+        starttime = starttime.replace(
+            microsecond=(starttime.microsecond // 1000) * 1000
+        )  # round down to millis
         if stationid == "*":
             cursor = self.connection.cursor(dictionary=True)
             cursor.execute(
                 f"""SELECT Timestamp, Stationid, Temperature, Humidity
                         FROM Measurements
                         WHERE Timestamp >= ? AND Timestamp <= ?""",
-                (
-                    starttime,
-                    endtime,
-                ),
+                (starttime, endtime),
             )
             rows = cursor.fetchall()
         else:
-            print("timestamps",starttime, endtime)
+            print("timestamps", starttime, endtime)
             cursor = self.connection.cursor(dictionary=True)
             cursor.execute(
                 f"""SELECT Timestamp, Stationid, Temperature, Humidity
                         FROM Measurements
                         WHERE Stationid = ? AND Timestamp >= ? AND Timestamp <= ?""",
-                (
-                    stationid,
-                    starttime,
-                    endtime,
-                ),
+                (stationid, starttime, endtime),
             )
             rows = cursor.fetchall()
 
