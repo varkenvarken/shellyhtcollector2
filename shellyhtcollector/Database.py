@@ -17,7 +17,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220811145307
+#  version: 20220811155734
 
 import re
 import mariadb
@@ -142,7 +142,7 @@ class MeasurementDatabase:
             microsecond=(starttime.microsecond // 1000) * 1000
         )  # round down to millis
         if stationid == "*":
-            cursor = self.connection.cursor(dictionary=True)
+            cursor = self.connection.cursor()
             cursor.execute(
                 f"""SELECT Timestamp, Stationid, Temperature, Humidity
                         FROM Measurements
@@ -152,7 +152,7 @@ class MeasurementDatabase:
             rows = cursor.fetchall()
         else:
             print("timestamps", starttime, endtime)
-            cursor = self.connection.cursor(dictionary=True)
+            cursor = self.connection.cursor()
             cursor.execute(
                 f"""SELECT Timestamp, Stationid, Temperature, Humidity
                         FROM Measurements
@@ -186,14 +186,14 @@ class MeasurementDatabase:
         """
         if stationid == "*":
             rows = []
-            cursor = self.connection.cursor(dictionary=True)
+            cursor = self.connection.cursor()
             cursor.execute("SELECT DISTINCT(Stationid) FROM Measurements")
             for row in cursor.fetchall():
                 rows.extend(self.retrieveLastMeasurement(row[0]))
         else:
             # get the data
             # TODO return data with name == "unknown" if mapping is not available
-            cursor = self.connection.cursor(dictionary=True)
+            cursor = self.connection.cursor()
             cursor.execute(
                 """SELECT Timestamp as 'Timestamp [timestamp]', Measurements.Stationid, Name, Temperature, Humidity
             FROM Measurements, StationidToName
@@ -279,7 +279,7 @@ class MeasurementDatabase:
         """
         if stationid == "*":
             conn = self.connection
-            cursor = conn.cursor(dictionary=True)
+            cursor = conn.cursor()
             cursor.execute("SELECT * FROM StationidToName")
             return [(row[0], row[1]) for row in cursor.fetchall()]
         else:
