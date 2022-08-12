@@ -3,7 +3,7 @@ import json
 from sys import stderr, exit
 from os import environ
 
-from shellyhtcollector.Database import MeasurementDatabase
+from htcollector.Database import MeasurementDatabase
 
 parser = argparse.ArgumentParser()
 parser.add_argument(

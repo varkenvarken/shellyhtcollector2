@@ -1,6 +1,6 @@
 import pytest
 
-from shellyhtcollector.__main__ import get_args
+from htcollector.__main__ import get_args
 
 help_msg = """usage: pytest [-h] [--database DATABASE] [--dbhost DBHOST] [--dbport DBPORT]
               [-p PORT] [-b BIND] [-x]

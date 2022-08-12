@@ -7,7 +7,7 @@ long_description = (this_directory / "README.md").read_text()
 
 setup(
     name="htcollector",
-    version="0.0.3",
+    version="0.0.5",
     description="Tools to log updates from Shelly HT devices",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -15,7 +15,7 @@ setup(
     author="varkenvarken",
     author_email="test@example.com",
     license="GPLv3",
-    packages=["shellyhtcollector"],
+    packages=["htcollector"],
     python_requires=">=3.8",
     install_requires=["mariadb==1.1.4", "python-dateutil==2.8.2"],
     extras_require={"graph": ["numpy==1.23.1", "matplotlib==3.5.3"]},

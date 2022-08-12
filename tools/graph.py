@@ -3,8 +3,8 @@ from datetime import datetime,timedelta
 from os import environ
 from sys import stdout
 
-from shellyhtcollector.Database import MeasurementDatabase
-from shellyhtcollector.Graph import graph
+from htcollector.Database import MeasurementDatabase
+from htcollector.Graph import graph
 
 from dateutil import tz
 

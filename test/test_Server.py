@@ -3,8 +3,8 @@ from io import BytesIO as IO
 from unittest import mock
 from datetime import datetime, timedelta
 
-from shellyhtcollector.Server import InterceptorHandlerFactory
-from shellyhtcollector.Database import MeasurementDatabase
+from htcollector.Server import InterceptorHandlerFactory
+from htcollector.Database import MeasurementDatabase
 
 
 @pytest.fixture(scope="class")

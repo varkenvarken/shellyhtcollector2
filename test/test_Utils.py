@@ -3,7 +3,7 @@ import pytest
 
 from datetime import datetime, timedelta
 
-from shellyhtcollector import Utils
+from htcollector import Utils
 
 
 class TestUtils:

@@ -3,7 +3,7 @@ from time import sleep
 import pytest
 from pytest import approx
 
-from shellyhtcollector import Database
+from htcollector import Database
 
 
 @pytest.fixture(scope="class")

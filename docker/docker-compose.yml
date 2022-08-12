@@ -1,0 +1,23 @@
+version: '3'
+services:
+  htcollector:
+    image: varkenvarken/htcollector:latest
+    ports:
+      - 8083:1883
+    env_file: .env
+    environment:
+      - DBSERVER=dbserver
+      - DBPORT=3306
+    depends_on:
+      - dbserver
+    networks:
+      - service_network
+  dbserver:
+    image: mariadb:latest
+    ports:
+      - 3306:3306
+    env_file: .env
+    networks:
+      - service_network
+networks:
+  service_network:

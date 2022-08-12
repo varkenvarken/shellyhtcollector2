@@ -6,8 +6,8 @@ from os import environ
 
 from dateutil import tz
 
-from shellyhtcollector.Database import MeasurementDatabase
-from shellyhtcollector.Utils import DatetimeEncoder
+from htcollector.Database import MeasurementDatabase
+from htcollector.Utils import DatetimeEncoder
 
 now = datetime.now(tz=tz.tzlocal())
 parser = argparse.ArgumentParser()

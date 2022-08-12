@@ -5,8 +5,8 @@ from datetime import datetime, timedelta
 from dateutil import tz
 from pathlib import Path
 
-from shellyhtcollector.Graph import graph
-from shellyhtcollector.Database import MeasurementDatabase, Measurement
+from htcollector.Graph import graph
+from htcollector.Database import MeasurementDatabase, Measurement
 
 
 @pytest.fixture(scope="class")
