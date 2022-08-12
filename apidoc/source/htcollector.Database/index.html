@@ -10,14 +10,14 @@
       
       
       
-        <link rel="canonical" href="https://varkenvarken.github.io/shellyhtcollector2/apidoc/source/shellyhtcollector.Database/">
+        <link rel="canonical" href="https://varkenvarken.github.io/shellyhtcollector2/apidoc/source/htcollector.Database/">
       
       <link rel="icon" href="../../../assets/favicon.png">
       <meta name="generator" content="mkdocs-1.3.0, mkdocs-material-8.3.9">
     
     
       
-        <title>shellyhtcollector.Database - Shelly HT Collector</title>
+        <title>htcollector.Database - Shelly HT Collector</title>
       
     
     
@@ -76,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#shellyhtcollectordatabase" class="md-skip">
+        <a href="#htcollectordatabase" class="md-skip">
           Skip to content
         </a>
       
@@ -108,7 +108,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              shellyhtcollector.Database
+              htcollector.Database
             
           </span>
         </div>
@@ -267,14 +267,14 @@
       
       
         <label class="md-nav__link" for="__nav_2_1">
-          shellyhtcollector
+          htcollector
           <span class="md-nav__icon md-icon"></span>
         </label>
       
-      <nav class="md-nav" aria-label="shellyhtcollector" data-md-level="2">
+      <nav class="md-nav" aria-label="htcollector" data-md-level="2">
         <label class="md-nav__title" for="__nav_2_1">
           <span class="md-nav__icon md-icon"></span>
-          shellyhtcollector
+          htcollector
         </label>
         <ul class="md-nav__list" data-md-scrollfix>
           
@@ -284,8 +284,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../../shellyhtcollector/" class="md-nav__link">
-        shellyhtcollector
+      <a href="../../htcollector/" class="md-nav__link">
+        htcollector
       </a>
     </li>
   
@@ -298,8 +298,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../../shellyhtcollector.Utils/" class="md-nav__link">
-        shellyhtcollector.Utils
+      <a href="../../htcollector.Utils/" class="md-nav__link">
+        htcollector.Utils
       </a>
     </li>
   
@@ -312,8 +312,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../../shellyhtcollector.Graph/" class="md-nav__link">
-        shellyhtcollector.Graph
+      <a href="../../htcollector.Graph/" class="md-nav__link">
+        htcollector.Graph
       </a>
     </li>
   
@@ -326,8 +326,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../../shellyhtcollector.Database/" class="md-nav__link">
-        shellyhtcollector.Database
+      <a href="../../htcollector.Database/" class="md-nav__link">
+        htcollector.Database
       </a>
     </li>
   
@@ -340,8 +340,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../../shellyhtcollector.Server/" class="md-nav__link">
-        shellyhtcollector.Server
+      <a href="../../htcollector.Server/" class="md-nav__link">
+        htcollector.Server
       </a>
     </li>
   
@@ -396,8 +396,8 @@
 <div class="mkapi-node">
 <h1 id="" class="mkapi-object mkapi-object-code plain">
 <span class="mkapi-object-kind mkapi-object-kind-code">SOURCE CODE</span>
-<span class="mkapi-object-prefix">shellyhtcollector.</span><span class="mkapi-object-name">Database</span>
-<span id="shellyhtcollector.Database"></span><a class="mkapi-docs-link" href="../../shellyhtcollector.Database">DOCS</a>
+<span class="mkapi-object-prefix">htcollector.</span><span class="mkapi-object-name">Database</span>
+<span id="htcollector.Database"></span><a class="mkapi-docs-link" href="../../htcollector.Database">DOCS</a>
 </h1>
 
 <div class="mkapi-code">
@@ -420,7 +420,7 @@
 <span class="c1">#  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,</span>
 <span class="c1">#  MA 02110-1301, USA.</span>
 <span class="c1">#</span>
-<span class="c1">#  version: 20220807130406</span>
+<span class="c1">#  version: 20220811155734</span>
 
 <span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">import</span> <span class="nn">mariadb</span>
@@ -428,7 +428,7 @@
 <span class="kn">from</span> <span class="nn">dateutil</span> <span class="kn">import</span> <span class="n">tz</span>
 
 
-<span class="k">class</span> <span class="nc">Measurement</span><span class="p">:</span><span id="shellyhtcollector.Database.Measurement"></span><a class="mkapi-docs-link" title="shellyhtcollector.Database.Measurement" href="../../shellyhtcollector.Database/#shellyhtcollector.Database.Measurement">DOCS</a>
+<span class="k">class</span> <span class="nc">Measurement</span><span class="p">:</span><span id="htcollector.Database.Measurement"></span><a class="mkapi-docs-link" title="htcollector.Database.Measurement" href="../../htcollector.Database/#htcollector.Database.Measurement">DOCS</a>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Represents a measurement of temperature and humidity by a station.</span>
 
@@ -462,7 +462,7 @@
         <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;Measurement(&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">stationid</span><span class="si">}</span><span class="s1">&quot;, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">temperature</span><span class="si">}</span><span class="s1">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">humidity</span><span class="si">}</span><span class="s1">)&#39;</span>
 
 
-<span class="k">class</span> <span class="nc">MeasurementDatabase</span><span class="p">:</span><span id="shellyhtcollector.Database.MeasurementDatabase"></span><a class="mkapi-docs-link" title="shellyhtcollector.Database.MeasurementDatabase" href="../../shellyhtcollector.Database/#shellyhtcollector.Database.MeasurementDatabase">DOCS</a>
+<span class="k">class</span> <span class="nc">MeasurementDatabase</span><span class="p">:</span><span id="htcollector.Database.MeasurementDatabase"></span><a class="mkapi-docs-link" title="htcollector.Database.MeasurementDatabase" href="../../htcollector.Database/#htcollector.Database.MeasurementDatabase">DOCS</a>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Implements a databases containing measurements and station descriptions.</span>
 
@@ -483,10 +483,11 @@
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">auto_reconnect</span> <span class="o">=</span> <span class="kc">True</span>
 
+        <span class="c1"># the timestamp is configured for millisecond resolution</span>
         <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
         <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
             <span class="sd">&quot;&quot;&quot;CREATE TABLE IF NOT EXISTS Measurements(</span>
-<span class="sd">            Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,</span>
+<span class="sd">            Timestamp DATETIME(3) DEFAULT CURRENT_TIMESTAMP,</span>
 <span class="sd">            Stationid VARCHAR(100),</span>
 <span class="sd">            Temperature REAL,</span>
 <span class="sd">            Humidity REAL);&quot;&quot;&quot;</span>
@@ -499,7 +500,7 @@
 <span class="sd">            Name TEXT NOT NULL);&quot;&quot;&quot;</span>
         <span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">storeMeasurement</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">measurement</span><span class="p">):</span><span id="shellyhtcollector.Database.MeasurementDatabase.storeMeasurement"></span><a class="mkapi-docs-link" title="shellyhtcollector.Database.MeasurementDatabase.storeMeasurement" href="../../shellyhtcollector.Database/#shellyhtcollector.Database.MeasurementDatabase.storeMeasurement">DOCS</a>
+    <span class="k">def</span> <span class="nf">storeMeasurement</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">measurement</span><span class="p">):</span><span id="htcollector.Database.MeasurementDatabase.storeMeasurement"></span><a class="mkapi-docs-link" title="htcollector.Database.MeasurementDatabase.storeMeasurement" href="../../htcollector.Database/#htcollector.Database.MeasurementDatabase.storeMeasurement">DOCS</a>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Store a measurement into the database.</span>
 
@@ -512,18 +513,14 @@
         <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
             <span class="sd">&quot;&quot;&quot;INSERT INTO Measurements(Stationid, Temperature, Humidity)</span>
 <span class="sd">                                    VALUES (?,?,?)&quot;&quot;&quot;</span><span class="p">,</span>
-            <span class="p">(</span>
-                <span class="n">measurement</span><span class="o">.</span><span class="n">stationid</span><span class="p">,</span>
-                <span class="n">measurement</span><span class="o">.</span><span class="n">temperature</span><span class="p">,</span>
-                <span class="n">measurement</span><span class="o">.</span><span class="n">humidity</span><span class="p">,</span>
-            <span class="p">),</span>
+            <span class="p">(</span><span class="n">measurement</span><span class="o">.</span><span class="n">stationid</span><span class="p">,</span> <span class="n">measurement</span><span class="o">.</span><span class="n">temperature</span><span class="p">,</span> <span class="n">measurement</span><span class="o">.</span><span class="n">humidity</span><span class="p">),</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
         <span class="n">n</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">rowcount</span>
         <span class="n">cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">n</span>
 
-    <span class="k">def</span> <span class="nf">retrieveMeasurements</span><span class="p">(</span><span id="shellyhtcollector.Database.MeasurementDatabase.retrieveMeasurements"></span><a class="mkapi-docs-link" title="shellyhtcollector.Database.MeasurementDatabase.retrieveMeasurements" href="../../shellyhtcollector.Database/#shellyhtcollector.Database.MeasurementDatabase.retrieveMeasurements">DOCS</a>
+    <span class="k">def</span> <span class="nf">retrieveMeasurements</span><span class="p">(</span><span id="htcollector.Database.MeasurementDatabase.retrieveMeasurements"></span><a class="mkapi-docs-link" title="htcollector.Database.MeasurementDatabase.retrieveMeasurements" href="../../htcollector.Database/#htcollector.Database.MeasurementDatabase.retrieveMeasurements">DOCS</a>
         <span class="bp">self</span><span class="p">,</span> <span class="n">stationid</span><span class="p">,</span> <span class="n">starttime</span><span class="p">:</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">endtime</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -537,43 +534,40 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            list: of dict(timestamp:t, stationid:id, temperature:t, humidity:h)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># timestamp in MariaDB are stored in UTC</span>
+        <span class="c1"># timestamps in MariaDB are stored in UTC</span>
         <span class="n">endtime</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">endtime</span><span class="o">.</span><span class="n">astimezone</span><span class="p">(</span><span class="n">tz</span><span class="o">.</span><span class="n">UTC</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">endtime</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
             <span class="k">else</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">tz</span><span class="o">=</span><span class="n">tz</span><span class="o">.</span><span class="n">UTC</span><span class="p">)</span>
         <span class="p">)</span>
         <span class="n">starttime</span> <span class="o">=</span> <span class="n">starttime</span><span class="o">.</span><span class="n">astimezone</span><span class="p">(</span><span class="n">tz</span><span class="o">.</span><span class="n">UTC</span><span class="p">)</span>
+        <span class="n">starttime</span> <span class="o">=</span> <span class="n">starttime</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+            <span class="n">microsecond</span><span class="o">=</span><span class="p">(</span><span class="n">starttime</span><span class="o">.</span><span class="n">microsecond</span> <span class="o">//</span> <span class="mi">1000</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000</span>
+        <span class="p">)</span>  <span class="c1"># round down to millis</span>
         <span class="k">if</span> <span class="n">stationid</span> <span class="o">==</span> <span class="s2">&quot;*&quot;</span><span class="p">:</span>
-            <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">(</span><span class="n">dictionary</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
             <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;&quot;&quot;SELECT Timestamp, Stationid, Temperature, Humidity</span>
 <span class="s2">                        FROM Measurements</span>
 <span class="s2">                        WHERE Timestamp &gt;= ? AND Timestamp &lt;= ?&quot;&quot;&quot;</span><span class="p">,</span>
-                <span class="p">(</span>
-                    <span class="n">starttime</span><span class="p">,</span>
-                    <span class="n">endtime</span><span class="p">,</span>
-                <span class="p">),</span>
+                <span class="p">(</span><span class="n">starttime</span><span class="p">,</span> <span class="n">endtime</span><span class="p">),</span>
             <span class="p">)</span>
             <span class="n">rows</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">(</span><span class="n">dictionary</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;timestamps&quot;</span><span class="p">,</span> <span class="n">starttime</span><span class="p">,</span> <span class="n">endtime</span><span class="p">)</span>
+            <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
             <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;&quot;&quot;SELECT Timestamp, Stationid, Temperature, Humidity</span>
 <span class="s2">                        FROM Measurements</span>
 <span class="s2">                        WHERE Stationid = ? AND Timestamp &gt;= ? AND Timestamp &lt;= ?&quot;&quot;&quot;</span><span class="p">,</span>
-                <span class="p">(</span>
-                    <span class="n">stationid</span><span class="p">,</span>
-                    <span class="n">starttime</span><span class="p">,</span>
-                    <span class="n">endtime</span><span class="p">,</span>
-                <span class="p">),</span>
+                <span class="p">(</span><span class="n">stationid</span><span class="p">,</span> <span class="n">starttime</span><span class="p">,</span> <span class="n">endtime</span><span class="p">),</span>
             <span class="p">)</span>
             <span class="n">rows</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
 
-        <span class="c1"># mariadb / mysql timestamps are in UTC</span>
+        <span class="c1"># mariadb / mysql timestamps are in UTC but returned as &#39;naive&#39; datetime objects</span>
         <span class="n">rows</span> <span class="o">=</span> <span class="p">[</span>
             <span class="p">{</span>
-                <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">astimezone</span><span class="p">(</span><span class="n">tz</span><span class="o">.</span><span class="n">tzlocal</span><span class="p">()),</span>
+                <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tzinfo</span><span class="o">=</span><span class="n">tz</span><span class="o">.</span><span class="n">UTC</span><span class="p">)</span><span class="o">.</span><span class="n">astimezone</span><span class="p">(</span><span class="n">tz</span><span class="o">.</span><span class="n">tzlocal</span><span class="p">()),</span>
                 <span class="s2">&quot;stationid&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
                 <span class="s2">&quot;temperature&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
                 <span class="s2">&quot;humidity&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
@@ -583,7 +577,7 @@
 
         <span class="k">return</span> <span class="n">rows</span>
 
-    <span class="k">def</span> <span class="nf">retrieveLastMeasurement</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stationid</span><span class="p">):</span><span id="shellyhtcollector.Database.MeasurementDatabase.retrieveLastMeasurement"></span><a class="mkapi-docs-link" title="shellyhtcollector.Database.MeasurementDatabase.retrieveLastMeasurement" href="../../shellyhtcollector.Database/#shellyhtcollector.Database.MeasurementDatabase.retrieveLastMeasurement">DOCS</a>
+    <span class="k">def</span> <span class="nf">retrieveLastMeasurement</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stationid</span><span class="p">):</span><span id="htcollector.Database.MeasurementDatabase.retrieveLastMeasurement"></span><a class="mkapi-docs-link" title="htcollector.Database.MeasurementDatabase.retrieveLastMeasurement" href="../../htcollector.Database/#htcollector.Database.MeasurementDatabase.retrieveLastMeasurement">DOCS</a>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the last measurement data for a station or all stations.</span>
 
@@ -595,14 +589,14 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">stationid</span> <span class="o">==</span> <span class="s2">&quot;*&quot;</span><span class="p">:</span>
             <span class="n">rows</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">(</span><span class="n">dictionary</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
             <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;SELECT DISTINCT(Stationid) FROM Measurements&quot;</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">():</span>
                 <span class="n">rows</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">retrieveLastMeasurement</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># get the data</span>
             <span class="c1"># TODO return data with name == &quot;unknown&quot; if mapping is not available</span>
-            <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">(</span><span class="n">dictionary</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
             <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
                 <span class="sd">&quot;&quot;&quot;SELECT Timestamp as &#39;Timestamp [timestamp]&#39;, Measurements.Stationid, Name, Temperature, Humidity</span>
 <span class="sd">            FROM Measurements, StationidToName</span>
@@ -611,9 +605,10 @@
             <span class="p">)</span>
             <span class="n">rows</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
             <span class="nb">print</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span>
+            <span class="c1"># mariadb / mysql timestamps are in UTC but returned as &#39;naive&#39; datetime objects</span>
             <span class="n">rows</span> <span class="o">=</span> <span class="p">[</span>
                 <span class="p">{</span>
-                    <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>  <span class="c1"># .replace(tzinfo=utc).astimezone(ltz),</span>
+                    <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tzinfo</span><span class="o">=</span><span class="n">tz</span><span class="o">.</span><span class="n">UTC</span><span class="p">)</span><span class="o">.</span><span class="n">astimezone</span><span class="p">(</span><span class="n">tz</span><span class="o">.</span><span class="n">tzlocal</span><span class="p">()),</span>
                     <span class="s2">&quot;deltat&quot;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
                     <span class="s2">&quot;stationid&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
                     <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
@@ -624,7 +619,7 @@
             <span class="p">]</span>
         <span class="k">return</span> <span class="n">rows</span>
 
-    <span class="k">def</span> <span class="nf">lastMeasurementsAsHTML</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stationid</span><span class="p">):</span><span id="shellyhtcollector.Database.MeasurementDatabase.lastMeasurementsAsHTML"></span><a class="mkapi-docs-link" title="shellyhtcollector.Database.MeasurementDatabase.lastMeasurementsAsHTML" href="../../shellyhtcollector.Database/#shellyhtcollector.Database.MeasurementDatabase.lastMeasurementsAsHTML">DOCS</a>
+    <span class="k">def</span> <span class="nf">lastMeasurementsAsHTML</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stationid</span><span class="p">):</span><span id="htcollector.Database.MeasurementDatabase.lastMeasurementsAsHTML"></span><a class="mkapi-docs-link" title="htcollector.Database.MeasurementDatabase.lastMeasurementsAsHTML" href="../../htcollector.Database/#htcollector.Database.MeasurementDatabase.lastMeasurementsAsHTML">DOCS</a>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the last measurement data for a station or all stations in HTML format.</span>
 
@@ -674,7 +669,7 @@
         <span class="n">start</span> <span class="o">=</span> <span class="n">end</span> <span class="o">-</span> <span class="n">d</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">retrieveMeasurements</span><span class="p">(</span><span class="n">stationid</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">names</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stationid</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span><span id="shellyhtcollector.Database.MeasurementDatabase.names"></span><a class="mkapi-docs-link" title="shellyhtcollector.Database.MeasurementDatabase.names" href="../../shellyhtcollector.Database/#shellyhtcollector.Database.MeasurementDatabase.names">DOCS</a>
+    <span class="k">def</span> <span class="nf">names</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stationid</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span><span id="htcollector.Database.MeasurementDatabase.names"></span><a class="mkapi-docs-link" title="htcollector.Database.MeasurementDatabase.names" href="../../htcollector.Database/#htcollector.Database.MeasurementDatabase.names">DOCS</a>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Insert or replace a name for a stationid, or return a list of all stations._</span>
 
@@ -687,7 +682,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">stationid</span> <span class="o">==</span> <span class="s2">&quot;*&quot;</span><span class="p">:</span>
             <span class="n">conn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span>
-            <span class="n">cursor</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">(</span><span class="n">dictionary</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">cursor</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
             <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;SELECT * FROM StationidToName&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="p">[(</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()]</span>
         <span class="k">else</span><span class="p">:</span>

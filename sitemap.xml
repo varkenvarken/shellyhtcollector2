@@ -2,57 +2,57 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://varkenvarken.github.io/shellyhtcollector2/</loc>
-         <lastmod>2022-08-07</lastmod>
+         <lastmod>2022-08-12</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://varkenvarken.github.io/shellyhtcollector2/apidoc/shellyhtcollector.Database/</loc>
-         <lastmod>2022-08-07</lastmod>
+         <loc>https://varkenvarken.github.io/shellyhtcollector2/apidoc/htcollector.Database/</loc>
+         <lastmod>2022-08-12</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://varkenvarken.github.io/shellyhtcollector2/apidoc/shellyhtcollector.Graph/</loc>
-         <lastmod>2022-08-07</lastmod>
+         <loc>https://varkenvarken.github.io/shellyhtcollector2/apidoc/htcollector.Graph/</loc>
+         <lastmod>2022-08-12</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://varkenvarken.github.io/shellyhtcollector2/apidoc/shellyhtcollector.Server/</loc>
-         <lastmod>2022-08-07</lastmod>
+         <loc>https://varkenvarken.github.io/shellyhtcollector2/apidoc/htcollector.Server/</loc>
+         <lastmod>2022-08-12</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://varkenvarken.github.io/shellyhtcollector2/apidoc/shellyhtcollector.Utils/</loc>
-         <lastmod>2022-08-07</lastmod>
+         <loc>https://varkenvarken.github.io/shellyhtcollector2/apidoc/htcollector.Utils/</loc>
+         <lastmod>2022-08-12</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://varkenvarken.github.io/shellyhtcollector2/apidoc/shellyhtcollector/</loc>
-         <lastmod>2022-08-07</lastmod>
+         <loc>https://varkenvarken.github.io/shellyhtcollector2/apidoc/htcollector/</loc>
+         <lastmod>2022-08-12</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://varkenvarken.github.io/shellyhtcollector2/apidoc/source/shellyhtcollector.Database/</loc>
-         <lastmod>2022-08-07</lastmod>
+         <loc>https://varkenvarken.github.io/shellyhtcollector2/apidoc/source/htcollector.Database/</loc>
+         <lastmod>2022-08-12</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://varkenvarken.github.io/shellyhtcollector2/apidoc/source/shellyhtcollector.Graph/</loc>
-         <lastmod>2022-08-07</lastmod>
+         <loc>https://varkenvarken.github.io/shellyhtcollector2/apidoc/source/htcollector.Graph/</loc>
+         <lastmod>2022-08-12</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://varkenvarken.github.io/shellyhtcollector2/apidoc/source/shellyhtcollector.Server/</loc>
-         <lastmod>2022-08-07</lastmod>
+         <loc>https://varkenvarken.github.io/shellyhtcollector2/apidoc/source/htcollector.Server/</loc>
+         <lastmod>2022-08-12</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://varkenvarken.github.io/shellyhtcollector2/apidoc/source/shellyhtcollector.Utils/</loc>
-         <lastmod>2022-08-07</lastmod>
+         <loc>https://varkenvarken.github.io/shellyhtcollector2/apidoc/source/htcollector.Utils/</loc>
+         <lastmod>2022-08-12</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://varkenvarken.github.io/shellyhtcollector2/apidoc/source/shellyhtcollector/</loc>
-         <lastmod>2022-08-07</lastmod>
+         <loc>https://varkenvarken.github.io/shellyhtcollector2/apidoc/source/htcollector/</loc>
+         <lastmod>2022-08-12</lastmod>
          <changefreq>daily</changefreq>
     </url>
 </urlset>
