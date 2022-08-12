@@ -21,7 +21,7 @@ theme:
 
 nav:
   - Home: 'README.md'
-  - API: 'mkapi/apidoc/shellyhtcollector'
+  - API: 'mkapi/apidoc/htcollector'
 
 markdown_extensions:
   - admonition

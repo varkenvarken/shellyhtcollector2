@@ -17,14 +17,17 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220810152012
+#  version: 20220812224106
 
 import re
+from io import BytesIO as IO
+from datetime import datetime, timedelta
+from dateutil import tz
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 from .Database import Measurement
-
+from .Graph import graph
 
 class InterceptorHandlerFactory:
     """
@@ -37,6 +40,10 @@ class InterceptorHandlerFactory:
         class InterceptorHandler(BaseHTTPRequestHandler):
             querypattern = re.compile(
                 r"^/sensorlog\?hum=(?P<humidity>\d+(\.\d+)?)\&temp=(?P<temperature>\d+(\.\d+)?)\&id=(?P<stationid>[a-z01-9-]+)$",
+                re.IGNORECASE,
+            )
+            graphpattern = re.compile(
+                r"^/graph\?id=(?P<stationid>[a-z01-9-]+)$",
                 re.IGNORECASE,
             )
 
@@ -52,6 +59,23 @@ class InterceptorHandlerFactory:
                         )
                         db.storeMeasurement(measurement)
                         self.send_response(HTTPStatus.OK)
+                    except Exception as e:
+                        print(e)
+                        self.send_response(HTTPStatus.INTERNAL_SERVER_ERROR)
+                elif m := re.match(self.graphpattern, self.path):
+                    print("match", m.groupdict())
+                    try:
+                        now = datetime.now(tz=tz.tzlocal())
+                        yesterday = now - timedelta(1)
+                        f = IO(b"")
+                        graph(db, f, m.group("stationid"), yesterday,  now)
+                        png = f.getvalue()
+                        self.send_response(HTTPStatus.OK)
+                        self.send_header("Content-type", "image/png")
+                        self.send_header("Content-Length", str(len(png)))
+                        self.end_headers()
+                        self.wfile.write(png)
+                        f.close()
                     except Exception as e:
                         print(e)
                         self.send_response(HTTPStatus.INTERNAL_SERVER_ERROR)
