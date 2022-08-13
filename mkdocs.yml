@@ -21,6 +21,7 @@ theme:
 
 nav:
   - Home: 'README.md'
+  - Building: 'building-notes.md'
   - API: 'mkapi/apidoc/htcollector'
 
 markdown_extensions:
