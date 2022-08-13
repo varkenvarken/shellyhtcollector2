@@ -1,0 +1,6 @@
+# keep the build context as minimal as possible
+*
+!/htcollector/*
+!/setup.py
+!/requirements.txt
+!/README.md

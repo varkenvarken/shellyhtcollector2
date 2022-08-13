@@ -6,7 +6,7 @@ services:
       - 8083:1883
     env_file: .env
     environment:
-      - DBSERVER=dbserver
+      - DBSERVER=docker_dbserver_1
       - DBPORT=3306
     depends_on:
       - dbserver
