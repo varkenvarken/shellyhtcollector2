@@ -1,0 +1,3 @@
+FROM mariadb:latest
+
+HEALTHCHECK CMD ["healthcheck.sh", "--connect"]

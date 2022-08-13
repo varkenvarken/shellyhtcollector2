@@ -9,11 +9,12 @@ services:
       - DBSERVER=docker_dbserver_1
       - DBPORT=3306
     depends_on:
-      - dbserver
+      dbserver:
+        condition: service_healthy
     networks:
       - service_network
   dbserver:
-    image: mariadb:latest
+    image: varkenvarken/mariadb:latest
     ports:
       - 3306:3306
     env_file: .env
