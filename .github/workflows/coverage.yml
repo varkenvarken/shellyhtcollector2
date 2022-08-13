@@ -34,7 +34,7 @@ jobs:
           docker run --detach --name test-mariadb --env MARIADB_DATABASE=shellyht --env MARIADB_USER=test-user --env MARIADB_PASSWORD=test_secret --env MARIADB_ROOT_PASSWORD=my-secret-pw -p 3306:3306  mariadb:latest
           sleep 15
       - name: Generate coverage report
-        run: python -m pytest --cov=shellyhtcollector --cov-report=xml test/
+        run: python -m pytest --cov=htcollector --cov-report=xml test/
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
       - name: tear down database
