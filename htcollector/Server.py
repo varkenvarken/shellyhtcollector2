@@ -17,7 +17,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220813133332
+#  version: 20220813145255
 
 import re
 from io import BytesIO as IO
@@ -48,6 +48,10 @@ class InterceptorHandlerFactory:
             )
             htmlpattern = re.compile(
                 r"^/html\?id=(?P<stationid>[a-z01-9-]+)$",
+                re.IGNORECASE,
+            )
+            namespattern = re.compile(
+                r"^(/name\?id=(?P<stationid>[a-z01-9-]+)\&name=(?P<name>([a-z01-9-]|\s)+))|(/names)$",
                 re.IGNORECASE,
             )
 
@@ -93,6 +97,26 @@ class InterceptorHandlerFactory:
                         self.end_headers()
                         self.wfile.write(html)
                         f.close()
+                    except Exception as e:
+                        print(e)
+                        self.send_response(HTTPStatus.INTERNAL_SERVER_ERROR)
+                elif m := re.match(self.namespattern, self.path):
+                    try:
+                        if not self.path.startswith("/names"):
+                            stationid = m.group("stationid")
+                            name = m.group("name")
+                            result = db.names(stationid, name)
+                        names = db.names("*")
+                        names = "\n".join(f"<tr><td>{n[0]}</td><td>{n[1]}</td></tr>" for n in names)
+                        self.send_response(HTTPStatus.OK)
+                        html = f"""<html><body>
+                        <table>{names}</table>
+                        </body></html>
+                        """
+                        self.send_header("Content-type", "text/html")
+                        self.send_header("Content-Length", str(len(html)))
+                        self.end_headers()
+                        self.wfile.write(bytes(html,"UTF-8"))
                     except Exception as e:
                         print(e)
                         self.send_response(HTTPStatus.INTERNAL_SERVER_ERROR)

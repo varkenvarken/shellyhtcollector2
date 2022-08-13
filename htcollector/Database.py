@@ -17,7 +17,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220811155734
+#  version: 20220813142942
 
 import re
 import mariadb
@@ -266,7 +266,7 @@ class MeasurementDatabase:
         start = end - d
         return self.retrieveMeasurements(stationid, start, end)
 
-    def names(self, stationid, name):
+    def names(self, stationid, name=None):
         """
         Insert or replace a name for a stationid, or return a list of all stations._
 

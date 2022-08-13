@@ -219,3 +219,46 @@ class TestInterceptor:
                         print(captured.out)
                         assert ihinstance.wfile.getvalue()[:15] == b"HTTP/1.0 200 OK"
 
+    def test_GET_NAME(self, database, capsys):
+        stationid = "newname-123456"
+        name = "NewName"
+
+        interceptorhandler = InterceptorHandlerFactory.getHandler(database)
+        with mock.patch.object(interceptorhandler, "finish", finish):
+            with mock.patch.object(
+                interceptorhandler, "date_time_string", date_time_string
+            ):
+                with mock.patch.object(
+                    interceptorhandler, "version_string", version_string
+                ):
+                    with mock.patch.object(interceptorhandler, "wbufsize", lambda: 1):
+                        start = datetime.now()
+                        request = MockRequest(
+                            b"/name?id=%s&name=%s"
+                            % (bytes(stationid, "UTF-8"), bytes(name, "UTF-8"))
+                        )
+                        ihinstance = interceptorhandler(
+                            request, ("127.0.0.1", 12345), "testserver.example.org"
+                        )
+                        captured = capsys.readouterr()
+                        print(captured.out)
+                        assert ihinstance.wfile.getvalue()[:15] == b"HTTP/1.0 200 OK"
+
+        interceptorhandler = InterceptorHandlerFactory.getHandler(database)
+        with mock.patch.object(interceptorhandler, "finish", finish):
+            with mock.patch.object(
+                interceptorhandler, "date_time_string", date_time_string
+            ):
+                with mock.patch.object(
+                    interceptorhandler, "version_string", version_string
+                ):
+                    with mock.patch.object(interceptorhandler, "wbufsize", lambda: 1):
+                        start = datetime.now()
+                        request = MockRequest(b"/names")
+                        ihinstance = interceptorhandler(
+                            request, ("127.0.0.1", 12345), "testserver.example.org"
+                        )
+                        captured = capsys.readouterr()
+                        print(captured.out)
+                        assert ihinstance.wfile.getvalue()[:15] == b"HTTP/1.0 200 OK"
+
