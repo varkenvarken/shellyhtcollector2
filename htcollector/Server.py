@@ -17,7 +17,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220813150040
+#  version: 20220813152252
 
 import re
 from io import BytesIO as IO
@@ -28,6 +28,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 from .Database import Measurement
 from .Graph import graph
+
 
 class InterceptorHandlerFactory:
     """
@@ -74,7 +75,7 @@ class InterceptorHandlerFactory:
                         now = datetime.now(tz=tz.tzlocal())
                         yesterday = now - timedelta(1)
                         f = IO(b"")
-                        graph(db, f, m.group("stationid"), yesterday,  now)
+                        graph(db, f, m.group("stationid"), yesterday, now)
                         png = f.getvalue()
                         self.send_response(HTTPStatus.OK)
                         self.send_header("Content-type", "image/png")
@@ -90,7 +91,7 @@ class InterceptorHandlerFactory:
                         now = datetime.now(tz=tz.tzlocal())
                         yesterday = now - timedelta(1)
                         f = IO(b"")
-                        html = bytes(db.lastMeasurementsAsHTML("*"),encoding="UTF-8")
+                        html = bytes(db.lastMeasurementsAsHTML("*"), encoding="UTF-8")
                         self.send_response(HTTPStatus.OK)
                         self.send_header("Content-type", "text/html")
                         self.send_header("Content-Length", str(len(html)))
@@ -107,7 +108,9 @@ class InterceptorHandlerFactory:
                             name = m.group("name")
                             result = db.names(stationid, name)
                         names = db.names("*")
-                        names = "\n".join(f"<tr><td>{n[0]}</td><td>{n[1]}</td></tr>" for n in names)
+                        names = "\n".join(
+                            f"<tr><td>{n[0]}</td><td>{n[1]}</td></tr>" for n in names
+                        )
                         self.send_response(HTTPStatus.OK)
                         html = f"""<html><body>
                         <table>{names}</table>
@@ -116,7 +119,7 @@ class InterceptorHandlerFactory:
                         self.send_header("Content-type", "text/html")
                         self.send_header("Content-Length", str(len(html)))
                         self.end_headers()
-                        self.wfile.write(bytes(html,"UTF-8"))
+                        self.wfile.write(bytes(html, "UTF-8"))
                     except Exception as e:
                         print(e)
                         self.send_response(HTTPStatus.INTERNAL_SERVER_ERROR)
