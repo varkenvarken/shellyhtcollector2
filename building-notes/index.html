@@ -76,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#building-pypi" class="md-skip">
+        <a href="#pypi" class="md-skip">
           Skip to content
         </a>
       
@@ -418,7 +418,7 @@
                 
 
 
-<h1 id="building-pypi">building - PyPi</h1>
+<h1 id="pypi">PyPi</h1>
 <p>!!!Just some documentation for my own workflow on preparing and testing docker images.</p>
 <p>From the top level directory of this repository we make sure
 we updatedthe pypi release first if needed (credentials are
@@ -428,11 +428,24 @@ twine upload dist/`ls -1 dist/ | tail -1`
 rm dist/*
 </code></pre></div>
 <p>Verify that it is updated <a href="https://pypi.org/project/htcollector/">on Pypi</a>.</p>
-<h1 id="building-docker">building - Docker</h1>
+<h1 id="docker">Docker</h1>
+<h2 id="building-images">building images</h2>
 <div class="highlight"><pre><span></span><code>docker build -t varkenvarken/htcollector:latest -f docker/Dockerfile .
 </code></pre></div>
+<p>we also depend on a mariadb image with an healthcheck</p>
+<div class="highlight"><pre><span></span><code>docker build -t varkenvarken/mariadb:latest -f docker/Dockerfile-mariadb .
+</code></pre></div>
+<h2 id="pushing-images">pushing images</h2>
+<p>We my want to push the images (to Docker hub or elsewhere)</p>
+<div class="highlight"><pre><span></span><code>docker login ...
+docker push varkenvarken/htcollector:latest
+docker push varkenvarken/mariadb:latest
+</code></pre></div>
+<p>Verify on their respective repositories:</p>
+<p><a href="https://hub.docker.com/r/varkenvarken/htcollector">htcollector</a>
+<a href="https://hub.docker.com/r/varkenvarken/mariadb">mariadb</a></p>
 <h1 id="testing">testing</h1>
-<p>Run htcollector and the mariadb database:</p>
+<p>Run htcollector and the mariadb database together from the compose file:</p>
 <div class="highlight"><pre><span></span><code>docker-compose -f docker/docker-compose.yml up -d
 </code></pre></div>
 <p>The test it by adding a couple of measurements en then retrieving a
@@ -442,10 +455,6 @@ graph and an html page:</p>
 http GET &quot;http://localhost:8083/sensorlog?hum=65&amp;temp=25&amp;id=test-123456&quot;
 
 http GET &quot;http://localhost:8083/graph?id=test-123456&quot; &gt; /tmp/f.png ; display /tmp/f.png
-</code></pre></div>
-<h1 id="push-the-image">push the image</h1>
-<div class="highlight"><pre><span></span><code>docker login
-docker push varkenvarken/htcollector:latest
 </code></pre></div>
 
               
