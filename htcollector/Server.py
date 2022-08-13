@@ -17,7 +17,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220812224106
+#  version: 20220813110304
 
 import re
 from io import BytesIO as IO
@@ -46,11 +46,14 @@ class InterceptorHandlerFactory:
                 r"^/graph\?id=(?P<stationid>[a-z01-9-]+)$",
                 re.IGNORECASE,
             )
+            htmlpattern = re.compile(
+                r"^/html\?id=(?P<stationid>[a-z01-9-]+)$",
+                re.IGNORECASE,
+            )
 
             def do_GET(self):
-                print(self.path)
+                print(self.path, flush=True)
                 if m := re.match(self.querypattern, self.path):
-                    print("match", m.groupdict())
                     try:
                         measurement = Measurement(
                             m.group("stationid"),
@@ -63,7 +66,6 @@ class InterceptorHandlerFactory:
                         print(e)
                         self.send_response(HTTPStatus.INTERNAL_SERVER_ERROR)
                 elif m := re.match(self.graphpattern, self.path):
-                    print("match", m.groupdict())
                     try:
                         now = datetime.now(tz=tz.tzlocal())
                         yesterday = now - timedelta(1)
@@ -75,6 +77,21 @@ class InterceptorHandlerFactory:
                         self.send_header("Content-Length", str(len(png)))
                         self.end_headers()
                         self.wfile.write(png)
+                        f.close()
+                    except Exception as e:
+                        print(e)
+                        self.send_response(HTTPStatus.INTERNAL_SERVER_ERROR)
+                elif m := re.match(self.htmlpattern, self.path):
+                    try:
+                        now = datetime.now(tz=tz.tzlocal())
+                        yesterday = now - timedelta(1)
+                        f = IO(b"")
+                        html = bytes(db.lastMeasurementsAsHTML("*"),encoding="UTF-8")
+                        self.send_response(HTTPStatus.OK)
+                        self.send_header("Content-type", "text/html")
+                        self.send_header("Content-Length", str(len(html)))
+                        self.end_headers()
+                        self.wfile.write(html)
                         f.close()
                     except Exception as e:
                         print(e)
