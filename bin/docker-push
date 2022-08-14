@@ -1,0 +1,4 @@
+#!/bin/bash
+docker login
+docker push varkenvarken/htcollector:latest
+docker push varkenvarken/mariadb:latest

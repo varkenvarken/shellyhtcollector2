@@ -62,3 +62,13 @@ http GET "http://localhost:8083/sensorlog?hum=65&temp=25&id=test-123456"
 http GET "http://localhost:8083/graph?id=test-123456" > /tmp/f.png ; display /tmp/f.png
 
 ```
+
+# deploy on another machine
+
+```
+mkdir htcollector-docker
+cd htcollector-docker
+mkdir docker
+cd docker
+curl https://raw.githubusercontent.com/varkenvarken/shellyhtcollector2/master/docker/.env > .env
+```

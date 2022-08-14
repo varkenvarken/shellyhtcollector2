@@ -17,7 +17,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220811145330
+#  version: 20220814111956
 
 import argparse
 from datetime import datetime
@@ -30,17 +30,50 @@ from .Server import Interceptor
 from .Database import MeasurementDatabase
 
 
+# all arguments/options can be set using environment variables or command line options
+# if both are present, command line options take precedence
+
+
 def get_args(arguments=None):
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--database", type=str, default="shellyht", help="database schema"
+        "--database",
+        type=str,
+        default=environ.get("MARIADB_DATABASE", "shellyht"),
+        help="database schema",
     )
-    parser.add_argument("--dbhost", type=str, default="127.0.0.1", help="database host")
-    parser.add_argument("--dbport", type=str, default="3306", help="database port")
     parser.add_argument(
-        "-p", "--port", type=int, default=1883, help="port to listen on"
+        "--dbuser", type=str, default=environ.get("MARIADB_USER", "=test-user")
     )
-    parser.add_argument("-b", "--bind", type=str, default="", help="address to bind to")
+    parser.add_argument(
+        "--dbpassword", type=str, default=environ.get("MARIADB_PASSWORD", "test_secret")
+    )
+    parser.add_argument(
+        "--dbhost",
+        type=str,
+        default=environ.get("DBSERVER", "127.0.0.1"),
+        help="database host",
+    )
+    parser.add_argument(
+        "--dbport",
+        type=str,
+        default=environ.get("DBPORT", "3306"),
+        help="database port",
+    )
+    parser.add_argument(
+        "-p",
+        "--port",
+        type=int,
+        default=int(environ.get("PORT", 1883)),
+        help="port to listen on",
+    )
+    parser.add_argument(
+        "-b",
+        "--bind",
+        type=str,
+        default=environ.get("BIND", ""),
+        help="address to bind to",
+    )
     parser.add_argument(
         "-x", "--ping", action="store_true", help="ping database end exit"
     )
@@ -50,11 +83,7 @@ def get_args(arguments=None):
 if __name__ == "__main__":
     args = get_args()
     db = MeasurementDatabase(
-        args.database,
-        args.dbhost,
-        args.dbport,
-        environ["DBUSER"],
-        environ["DBPASSWORD"],
+        args.database, args.dbhost, args.dbport, args.dbuser, args.dbpassword
     )
 
     if args.ping:

@@ -1,0 +1,4 @@
+#!/bin/bash
+
+docker build -t varkenvarken/htcollector:latest -f docker/Dockerfile .
+docker build -t varkenvarken/mariadb:latest -f docker/Dockerfile-mariadb .
