@@ -17,7 +17,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220813142942
+#  version: 20220814134232
 
 import re
 import mariadb
@@ -184,6 +184,8 @@ class MeasurementDatabase:
         Returns:
             list: a list of dict objects, one for each station
         """
+        names = {nm[0]: nm[1] for nm in self.names("*")}
+
         if stationid == "*":
             rows = []
             cursor = self.connection.cursor()
@@ -192,25 +194,23 @@ class MeasurementDatabase:
                 rows.extend(self.retrieveLastMeasurement(row[0]))
         else:
             # get the data
-            # TODO return data with name == "unknown" if mapping is not available
             cursor = self.connection.cursor()
             cursor.execute(
-                """SELECT Timestamp as 'Timestamp [timestamp]', Measurements.Stationid, Name, Temperature, Humidity
-            FROM Measurements, StationidToName
-            WHERE Measurements.Stationid = ? AND Measurements.Stationid = StationidToName.Stationid ORDER BY timestamp DESC LIMIT 1;""",
+                """SELECT Timestamp as 'Timestamp [timestamp]', Stationid, Temperature, Humidity
+            FROM Measurements
+            WHERE Stationid = ? ORDER BY timestamp DESC LIMIT 1;""",
                 (stationid,),
             )
             rows = cursor.fetchall()
-            print(rows)
             # mariadb / mysql timestamps are in UTC but returned as 'naive' datetime objects
             rows = [
                 {
                     "time": row[0].replace(tzinfo=tz.UTC).astimezone(tz.tzlocal()),
                     "deltat": datetime.now() - row[0],
                     "stationid": row[1],
-                    "name": row[2],
-                    "temperature": row[3],
-                    "humidity": row[4],
+                    "name": names.get(row[1], "unknown"),
+                    "temperature": row[2],
+                    "humidity": row[3],
                 }
                 for row in rows
             ]
