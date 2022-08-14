@@ -17,8 +17,9 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220813152252
+#  version: 20220814130516
 
+from json import dumps
 import re
 from io import BytesIO as IO
 from datetime import datetime, timedelta
@@ -28,6 +29,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 from .Database import Measurement
 from .Graph import graph
+from .Utils import DatetimeEncoder
 
 
 class InterceptorHandlerFactory:
@@ -49,6 +51,10 @@ class InterceptorHandlerFactory:
             )
             htmlpattern = re.compile(
                 r"^/html\?id=(?P<stationid>[a-z01-9-]+)$",
+                re.IGNORECASE,
+            )
+            jsonpattern = re.compile(
+                r"^/json\?id=(?P<stationid>[a-z01-9-]+)$",
                 re.IGNORECASE,
             )
             namespattern = re.compile(
@@ -88,16 +94,23 @@ class InterceptorHandlerFactory:
                         self.send_response(HTTPStatus.INTERNAL_SERVER_ERROR)
                 elif m := re.match(self.htmlpattern, self.path):
                     try:
-                        now = datetime.now(tz=tz.tzlocal())
-                        yesterday = now - timedelta(1)
-                        f = IO(b"")
                         html = bytes(db.lastMeasurementsAsHTML("*"), encoding="UTF-8")
                         self.send_response(HTTPStatus.OK)
                         self.send_header("Content-type", "text/html")
                         self.send_header("Content-Length", str(len(html)))
                         self.end_headers()
                         self.wfile.write(html)
-                        f.close()
+                    except Exception as e:
+                        print(e)
+                        self.send_response(HTTPStatus.INTERNAL_SERVER_ERROR)
+                elif m := re.match(self.jsonpattern, self.path):
+                    try:
+                        json = bytes(dumps(db.retrieveLastMeasurement("*"),cls=DatetimeEncoder), encoding="UTF-8")
+                        self.send_response(HTTPStatus.OK)
+                        self.send_header("Content-type", "application/json")
+                        self.send_header("Content-Length", str(len(json)))
+                        self.end_headers()
+                        self.wfile.write(json)
                     except Exception as e:
                         print(e)
                         self.send_response(HTTPStatus.INTERNAL_SERVER_ERROR)
