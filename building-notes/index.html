@@ -456,6 +456,19 @@ http GET &quot;http://localhost:8083/sensorlog?hum=65&amp;temp=25&amp;id=test-12
 
 http GET &quot;http://localhost:8083/graph?id=test-123456&quot; &gt; /tmp/f.png ; display /tmp/f.png
 </code></pre></div>
+<h1 id="deploy-on-another-machine">deploy on another machine</h1>
+<p>Tested with Docker version 20.10.12, build 20.10.12-0ubuntu2~20.04.1 / Docker Compose version v2.6.0</p>
+<div class="highlight"><pre><span></span><code>docker pull varkenvarken/htcollector:latest
+docker pull varkenvarken/mariadb:latest
+
+mkdir htcollector-docker
+cd htcollector-docker
+mkdir docker
+cd docker
+curl https://raw.githubusercontent.com/varkenvarken/shellyhtcollector2/master/docker/.env &gt; .env
+curl https://raw.githubusercontent.com/varkenvarken/shellyhtcollector2/master/docker/docker-compose.yml &gt; docker-compose.yml
+docker compose -f docker-compose.yml up -d
+</code></pre></div>
 
               
             </article>

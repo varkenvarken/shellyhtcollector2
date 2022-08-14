@@ -435,7 +435,7 @@
 <span class="c1">#  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,</span>
 <span class="c1">#  MA 02110-1301, USA.</span>
 <span class="c1">#</span>
-<span class="c1">#  version: 20220811155734</span>
+<span class="c1">#  version: 20220813142942</span>
 
 <span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">import</span> <span class="nn">mariadb</span>
@@ -684,7 +684,7 @@
         <span class="n">start</span> <span class="o">=</span> <span class="n">end</span> <span class="o">-</span> <span class="n">d</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">retrieveMeasurements</span><span class="p">(</span><span class="n">stationid</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">names</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stationid</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span><span id="htcollector.Database.MeasurementDatabase.names"></span><a class="mkapi-docs-link" title="htcollector.Database.MeasurementDatabase.names" href="../../htcollector.Database/#htcollector.Database.MeasurementDatabase.names">DOCS</a>
+    <span class="k">def</span> <span class="nf">names</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stationid</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span><span id="htcollector.Database.MeasurementDatabase.names"></span><a class="mkapi-docs-link" title="htcollector.Database.MeasurementDatabase.names" href="../../htcollector.Database/#htcollector.Database.MeasurementDatabase.names">DOCS</a>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Insert or replace a name for a stationid, or return a list of all stations._</span>
 
