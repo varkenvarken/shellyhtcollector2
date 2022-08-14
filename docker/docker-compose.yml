@@ -17,9 +17,13 @@ services:
   dbserver:
     image: varkenvarken/mariadb:latest
     ports:
-      - 3306:3306
+      - 3366:3306
     env_file: .env
+    volumes:
+      - htcollector_data:/var/lib/mysql
     networks:
       - service_network
 networks:
   service_network:
+volumes:
+  htcollector_data:
