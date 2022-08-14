@@ -65,10 +65,17 @@ http GET "http://localhost:8083/graph?id=test-123456" > /tmp/f.png ; display /tm
 
 # deploy on another machine
 
+Tested with Docker version 20.10.12, build 20.10.12-0ubuntu2~20.04.1 / Docker Compose version v2.6.0
+
 ```
+docker pull varkenvarken/htcollector:latest
+docker pull varkenvarken/mariadb:latest
+
 mkdir htcollector-docker
 cd htcollector-docker
 mkdir docker
 cd docker
 curl https://raw.githubusercontent.com/varkenvarken/shellyhtcollector2/master/docker/.env > .env
+curl https://raw.githubusercontent.com/varkenvarken/shellyhtcollector2/master/docker/docker-compose.yml > docker-compose.yml
+docker compose -f docker-compose.yml up -d
 ```
