@@ -435,7 +435,7 @@
 <span class="c1">#  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,</span>
 <span class="c1">#  MA 02110-1301, USA.</span>
 <span class="c1">#</span>
-<span class="c1">#  version: 20220813142942</span>
+<span class="c1">#  version: 20220814134232</span>
 
 <span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">import</span> <span class="nn">mariadb</span>
@@ -602,6 +602,8 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            list: a list of dict objects, one for each station</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">names</span> <span class="o">=</span> <span class="p">{</span><span class="n">nm</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="n">nm</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">nm</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">)}</span>
+
         <span class="k">if</span> <span class="n">stationid</span> <span class="o">==</span> <span class="s2">&quot;*&quot;</span><span class="p">:</span>
             <span class="n">rows</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
@@ -610,25 +612,23 @@
                 <span class="n">rows</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">retrieveLastMeasurement</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># get the data</span>
-            <span class="c1"># TODO return data with name == &quot;unknown&quot; if mapping is not available</span>
             <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
             <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-                <span class="sd">&quot;&quot;&quot;SELECT Timestamp as &#39;Timestamp [timestamp]&#39;, Measurements.Stationid, Name, Temperature, Humidity</span>
-<span class="sd">            FROM Measurements, StationidToName</span>
-<span class="sd">            WHERE Measurements.Stationid = ? AND Measurements.Stationid = StationidToName.Stationid ORDER BY timestamp DESC LIMIT 1;&quot;&quot;&quot;</span><span class="p">,</span>
+                <span class="sd">&quot;&quot;&quot;SELECT Timestamp as &#39;Timestamp [timestamp]&#39;, Stationid, Temperature, Humidity</span>
+<span class="sd">            FROM Measurements</span>
+<span class="sd">            WHERE Stationid = ? ORDER BY timestamp DESC LIMIT 1;&quot;&quot;&quot;</span><span class="p">,</span>
                 <span class="p">(</span><span class="n">stationid</span><span class="p">,),</span>
             <span class="p">)</span>
             <span class="n">rows</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span>
             <span class="c1"># mariadb / mysql timestamps are in UTC but returned as &#39;naive&#39; datetime objects</span>
             <span class="n">rows</span> <span class="o">=</span> <span class="p">[</span>
                 <span class="p">{</span>
                     <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tzinfo</span><span class="o">=</span><span class="n">tz</span><span class="o">.</span><span class="n">UTC</span><span class="p">)</span><span class="o">.</span><span class="n">astimezone</span><span class="p">(</span><span class="n">tz</span><span class="o">.</span><span class="n">tzlocal</span><span class="p">()),</span>
                     <span class="s2">&quot;deltat&quot;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
                     <span class="s2">&quot;stationid&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-                    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
-                    <span class="s2">&quot;temperature&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
-                    <span class="s2">&quot;humidity&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span>
+                    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">names</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;unknown&quot;</span><span class="p">),</span>
+                    <span class="s2">&quot;temperature&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+                    <span class="s2">&quot;humidity&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
                 <span class="p">}</span>
                 <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span>
             <span class="p">]</span>

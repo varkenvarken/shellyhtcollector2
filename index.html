@@ -251,6 +251,20 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#intro" class="md-nav__link">
+    Intro
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#easy-installation-using-docker" class="md-nav__link">
+    Easy installation using Docker
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#api-documentation" class="md-nav__link">
     API documentation
   </a>
@@ -260,6 +274,13 @@
         <li class="md-nav__item">
   <a href="#architecture-overview" class="md-nav__link">
     Architecture overview
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#installation-as-a-library" class="md-nav__link">
+    Installation as a library
   </a>
   
 </li>
@@ -493,6 +514,20 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#intro" class="md-nav__link">
+    Intro
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#easy-installation-using-docker" class="md-nav__link">
+    Easy installation using Docker
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#api-documentation" class="md-nav__link">
     API documentation
   </a>
@@ -502,6 +537,13 @@
         <li class="md-nav__item">
   <a href="#architecture-overview" class="md-nav__link">
     Architecture overview
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#installation-as-a-library" class="md-nav__link">
+    Installation as a library
   </a>
   
 </li>
@@ -570,14 +612,40 @@
 <img alt="Python versions" src="https://img.shields.io/pypi/pyversions/htcollector" /></p>
 <h1 id="shellyhtcollector2">Shellyhtcollector2</h1>
 <p>Gather incoming temperature and humidity updates from a small swarm of Shellyht devices.</p>
+<h2 id="intro">Intro</h2>
+<p>Shelly HT devices can be configured to send their measurements to a configurable server. The server is called using a simple HTTP GET request that by default uses an URL like</p>
+<p><code>http://mymachine:8083/sensorlog?hum=24&amp;temp=42.38&amp;id=shellyht-1234FA</code></p>
+<p><code>htcollector</code> is a solution that intercepts these requests and logs the data in a database. It also provides means to associat meaningful labels with the station-ids and generate html, json or a png image with the latest measurements.</p>
+<h2 id="easy-installation-using-docker">Easy installation using Docker</h2>
+<p><code>htcollector</code> is provided as an easy to use <a href="https://hub.docker.com/u/varkenvarken">Docker solution</a> too:</p>
+<p>You can simply download just a file with environment variables and a docker compose file and start that up (watch the long curl lines!):</p>
+<div class="highlight"><pre><span></span><code>mkdir htcollector-docker
+<span class="nb">cd</span> htcollector-docker
+mkdir docker
+<span class="nb">cd</span> docker
+curl https://raw.githubusercontent.com/varkenvarken/shellyhtcollector2/master/docker/.env &gt; .env
+curl https://raw.githubusercontent.com/varkenvarken/shellyhtcollector2/master/docker/docker-compose.yml &gt; docker-compose.yml
+docker compose -f docker-compose.yml up -d
+</code></pre></div>
+<p>This will download two images and start them as two containers: one running a MariaDB server and one running the htcollector.</p>
+<p>By default the htcollector is configured to listen on port 8083 for incoming measurements from the devices, but this can be changed of course (or you can change the configuration of your Shelly HT devices).</p>
+<p>When measurements start getting logged, you can go to the same webserver to get an html page with the last measurements:</p>
+<p><code>http://mymachine:8083/html?id=shellyht-1234FA</code></p>
+<p>You can associate a meaningfull label with</p>
+<p><code>http://mymachine:8083/name?id=shellyht-1234FA&amp;name=Kitchen</code></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Tested with Docker version 20.10.12, build 20.10.12-0ubuntu2~20.04.1 / Docker Compose version v2.6.0</p>
+</div>
 <h2 id="api-documentation">API documentation</h2>
-<p><a href="https://varkenvarken.github.io/shellyhtcollector2/apidoc/shellyhtcollector/">Available on the GitHub pages of this repo</a></p>
+<p><a href="https://varkenvarken.github.io/shellyhtcollector2/apidoc/htcollector/">Available on the GitHub pages of this repo</a></p>
 <h2 id="architecture-overview">Architecture overview</h2>
 <pre class="mermaid"><code>flowchart LR
-    s1[shellyht] --&gt; w[webserver] &lt;--&gt; d[database] &lt;--&gt; r[reporting tools]
+    s1[shellyht] --&gt; w[webserver] &lt;--&gt; d[database]
     s2[shellyht] --&gt; w[webserver]
     s3[shellyht] --&gt; w[webserver]
     s4[shellyht] --&gt; w[webserver]</code></pre>
+<h2 id="installation-as-a-library">Installation as a library</h2>
 <h2 id="install-mariadb-connector-for-python">Install mariadb connector for Python</h2>
 <p>The <code>mariadb</code> python module is not pure Python and depends on <code>libmariadb</code>, so setup is less straight forward than you would hope:
 <div class="highlight"><pre><span></span><code>wget https://downloads.mariadb.com/MariaDB/mariadb_repo_setup
@@ -594,17 +662,26 @@ Here we have chosen to install it for everyone, but if you used a virtual enviro
 </code></pre></div>
 <p>or alternatively, download it from GitHub </p>
 <div class="highlight"><pre><span></span><code>git clone https://github.com/varkenvarken/shellyhtcollector2.git
+<span class="nb">cd</span> shellyhtcollector2
+python setup.py install
 </code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>It might be a good idea to do this inside a virtual environment!</p>
+</div>
 <h2 id="running-the-server">Running the server</h2>
 <p>Assuming you have MariaDB running on the same machine with a database (schema) <code>shellyht</code>,
 and that the user defined in the environment variable DBUSER has enough privileges to create a tables,
 the following command will create the necessary tables if not yet present and start listening on port 1883 for incoming connections:
-<div class="highlight"><pre><span></span><code>nohup python3 -m shellyhtcollector -p <span class="m">1883</span> <span class="p">&amp;</span>
+<div class="highlight"><pre><span></span><code>nohup python3 -m shellyhtcollector<span class="p">&amp;</span>
 </code></pre></div></p>
 <h2 id="additional-configuration">Additional configuration</h2>
 <p>The reporting tools assume that a table <code>StationidToName</code> exists that contains a mapping between StationId and Name.</p>
 <p>A mapping for a stationid can be added or updated with the mapping tool, for example:</p>
 <div class="highlight"><pre><span></span><code>cd shellyhtcollector; python3 tools/mapping.py &quot;shellyht-6A566F&quot; &quot;dining room&quot;
+</code></pre></div>
+<p>Or, since you have the server running now, simply execute a http get</p>
+<div class="highlight"><pre><span></span><code>http GET &quot;http://localhost:1883/name?id=shellyht-6A566F&amp;name=dining room&quot;
 </code></pre></div>
 <h2 id="generating-reports">Generating reports</h2>
 <p>An html file with the last recorded measurements can be generated with:
