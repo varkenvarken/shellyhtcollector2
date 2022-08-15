@@ -17,7 +17,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220814134232
+#  version: 20220815092948
 
 import re
 import mariadb
@@ -174,7 +174,7 @@ class MeasurementDatabase:
 
         return rows
 
-    def retrieveLastMeasurement(self, stationid):
+    def retrieveLastMeasurement(self, stationid, _names=None):
         """
         Return the last measurement data for a station or all stations.
 
@@ -184,14 +184,16 @@ class MeasurementDatabase:
         Returns:
             list: a list of dict objects, one for each station
         """
-        names = {nm[0]: nm[1] for nm in self.names("*")}
+        print(stationid, _names)
+        if _names is None:
+            names = {nm[0]: nm[1] for nm in self.names("*")}
+        else:
+            names = _names
 
         if stationid == "*":
             rows = []
-            cursor = self.connection.cursor()
-            cursor.execute("SELECT DISTINCT(Stationid) FROM Measurements")
-            for row in cursor.fetchall():
-                rows.extend(self.retrieveLastMeasurement(row[0]))
+            for name in names:
+                rows.extend(self.retrieveLastMeasurement(name, _names=names))
         else:
             # get the data
             cursor = self.connection.cursor()
