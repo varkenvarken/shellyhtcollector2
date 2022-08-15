@@ -17,7 +17,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220815155112
+#  version: 20220815160549
 
 from json import dumps
 import re
@@ -94,7 +94,7 @@ class InterceptorHandlerFactory:
                         self.send_response(HTTPStatus.INTERNAL_SERVER_ERROR)
                 elif m := re.match(self.htmlpattern, self.path):
                     try:
-                        ms = db.retrieveLastMeasurement(m.group('stationid'))
+                        ms = db.retrieveLastMeasurement(m.group("stationid"))
                         mdivs = "\n".join(
                             f"""
                             <div class="measurement{' late' if m['deltat'].total_seconds()>24*3600 else ''}" id="{m["stationid"]}">
@@ -115,7 +115,8 @@ class InterceptorHandlerFactory:
                         .hum {float:left; font-size:12pt;}
                         .late { background-color:red; }
                         """
-                        html = bytes(f"""<html>
+                        html = bytes(
+                            f"""<html>
                         <head><meta charset="UTF-8"><meta http-equiv="refresh" content="300"><title>Temperatuur binnen</title>
                         <style>{style}</style>
                         </head>
@@ -126,7 +127,9 @@ class InterceptorHandlerFactory:
                         </body>
                         <script>document.querySelectorAll("[data-time]").forEach(function(e){{d=new Date(e.getAttribute("data-time"));e.innerHTML=d.getHours() + ":" + d.getMinutes().toString().padStart(2, '0')}})</script>
                         </html>
-                        """, "UTF-8")
+                        """,
+                            "UTF-8",
+                        )
                         self.send_response(HTTPStatus.OK)
                         self.send_header("Content-type", "text/html")
                         self.send_header("Content-Length", str(len(html)))
@@ -138,7 +141,10 @@ class InterceptorHandlerFactory:
                 elif m := re.match(self.jsonpattern, self.path):
                     try:
                         json = bytes(
-                            dumps(db.retrieveLastMeasurement(m.group('stationid')), cls=DatetimeEncoder),
+                            dumps(
+                                db.retrieveLastMeasurement(m.group("stationid")),
+                                cls=DatetimeEncoder,
+                            ),
                             encoding="UTF-8",
                         )
                         self.send_response(HTTPStatus.OK)
