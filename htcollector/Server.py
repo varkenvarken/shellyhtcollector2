@@ -17,7 +17,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220815140019
+#  version: 20220815155112
 
 from json import dumps
 import re
@@ -50,11 +50,11 @@ class InterceptorHandlerFactory:
                 re.IGNORECASE,
             )
             htmlpattern = re.compile(
-                r"^/html\?id=(?P<stationid>[a-z01-9-]+)$",
+                r"^/html(\?id=(?P<stationid>[a-z01-9-]+))?$",
                 re.IGNORECASE,
             )
             jsonpattern = re.compile(
-                r"^/json\?id=(?P<stationid>[a-z01-9-]+)$",
+                r"^/json(\?id=(?P<stationid>[a-z01-9-]+))?$",
                 re.IGNORECASE,
             )
             namespattern = re.compile(
@@ -94,7 +94,7 @@ class InterceptorHandlerFactory:
                         self.send_response(HTTPStatus.INTERNAL_SERVER_ERROR)
                 elif m := re.match(self.htmlpattern, self.path):
                     try:
-                        ms = db.retrieveLastMeasurement("*")
+                        ms = db.retrieveLastMeasurement(m.group('stationid'))
                         mdivs = "\n".join(
                             f"""
                             <div class="measurement{' late' if m['deltat'].total_seconds()>24*3600 else ''}" id="{m["stationid"]}">
@@ -138,7 +138,7 @@ class InterceptorHandlerFactory:
                 elif m := re.match(self.jsonpattern, self.path):
                     try:
                         json = bytes(
-                            dumps(db.retrieveLastMeasurement("*"), cls=DatetimeEncoder),
+                            dumps(db.retrieveLastMeasurement(m.group('stationid')), cls=DatetimeEncoder),
                             encoding="UTF-8",
                         )
                         self.send_response(HTTPStatus.OK)

@@ -174,7 +174,9 @@ class MeasurementDatabase:
 
         return rows
 
-    def retrieveLastMeasurement(self, stationid, _names=None, _unique_stations=None):
+    def retrieveLastMeasurement(
+        self, stationid=None, _names=None, _unique_stations=None
+    ):
         """
         Return the last measurement data for a station or all stations.
 
@@ -191,7 +193,7 @@ class MeasurementDatabase:
         if _unique_stations is None:
             _unique_stations = self.uniqueStations()
 
-        if stationid == "*":
+        if stationid is None:
             rows = []
             for unique_station in _unique_stations:
                 rows.extend(

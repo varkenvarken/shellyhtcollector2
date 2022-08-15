@@ -76,7 +76,7 @@ class TestMeasurements:
         )  # without a stationid mapping we never get anything back
         database.storeMeasurement(Database.Measurement("test-100001", 10, 40))
         database.storeMeasurement(Database.Measurement("test-100002", 15, 45))
-        r = database.retrieveLastMeasurement("*")
+        r = database.retrieveLastMeasurement()
         assert len(r) > 1
         m1 = [m for m in r if m["stationid"] == "test-100001"]
         assert len(m1) == 1
@@ -104,5 +104,4 @@ class TestMeasurements:
         assert len(r) == 1
         m1 = [m for m in r if m["stationid"] == "test-100001"]
         assert len(m1) == 1
-
 
