@@ -17,7 +17,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220815100657
+#  version: 20220815112045
 
 import re
 import mariadb
@@ -212,7 +212,7 @@ class MeasurementDatabase:
             # mariadb / mysql timestamps are in UTC but returned as 'naive' datetime objects
             rows = [
                 {
-                    "time": row[0].replace(tzinfo=tz.UTC).astimezone(tz.tzlocal()),
+                    "time": row[0].replace(tzinfo=tz.UTC),
                     "deltat": datetime.now() - row[0],
                     "stationid": row[1],
                     "name": _names.get(row[1], "unknown"),
@@ -238,7 +238,7 @@ class MeasurementDatabase:
             f"""
             <div class="measurement{' late' if m['deltat'].total_seconds()>24*3600 else ''}" id="{m["stationid"]}">
             <div class="station">{m["name"]}</div>
-            <div class="time" data-time="{m["time"]}">{m['time']:%H:%M}</div>
+            <div class="time" data-time="{m["time"]}"></div>
             <div class="temp">{m["temperature"]:.1f}<span class="degrees">°C</span></div>
             <div class="hum">{m["humidity"]:.0f}<span class=percent>%</span></div>
             </div>"""
@@ -254,7 +254,7 @@ class MeasurementDatabase:
         .hum {float:left; font-size:12pt;}
         .late { background-color:red; }
         """
-        return f"""<html>
+        html = f"""<html>
         <head><meta charset="UTF-8"><meta http-equiv="refresh" content="300"><title>Temperatuur binnen</title>
         <style>{style}</style>
         </head>
@@ -263,8 +263,11 @@ class MeasurementDatabase:
         {mdivs}
         </div>
         </body>
+        <script>document.querySelectorAll("[data-time]").forEach(function(e){{d=new Date(e.getAttribute("data-time"));e.innerHTML=d.getHours() + ":" + d.getMinutes().toString().padStart(2, '0')}})</script>
         </html>
         """
+        print(html)
+        return html
 
     def retrieveMeasurementsLast24Hours(self, stationid):
         ltz = tz.tzlocal()
