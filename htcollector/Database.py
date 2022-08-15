@@ -17,7 +17,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220815092948
+#  version: 20220815100657
 
 import re
 import mariadb
@@ -174,7 +174,7 @@ class MeasurementDatabase:
 
         return rows
 
-    def retrieveLastMeasurement(self, stationid, _names=None):
+    def retrieveLastMeasurement(self, stationid, _names=None, _unique_stations=None):
         """
         Return the last measurement data for a station or all stations.
 
@@ -184,16 +184,21 @@ class MeasurementDatabase:
         Returns:
             list: a list of dict objects, one for each station
         """
-        print(stationid, _names)
+        print(stationid, _names, _unique_stations)
         if _names is None:
-            names = {nm[0]: nm[1] for nm in self.names("*")}
-        else:
-            names = _names
+            _names = {nm[0]: nm[1] for nm in self.names("*")}
+
+        if _unique_stations is None:
+            _unique_stations = self.uniqueStations()
 
         if stationid == "*":
             rows = []
-            for name in names:
-                rows.extend(self.retrieveLastMeasurement(name, _names=names))
+            for unique_station in _unique_stations:
+                rows.extend(
+                    self.retrieveLastMeasurement(
+                        unique_station, _names=_names, _unique_stations=_unique_stations
+                    )
+                )
         else:
             # get the data
             cursor = self.connection.cursor()
@@ -210,7 +215,7 @@ class MeasurementDatabase:
                     "time": row[0].replace(tzinfo=tz.UTC).astimezone(tz.tzlocal()),
                     "deltat": datetime.now() - row[0],
                     "stationid": row[1],
-                    "name": names.get(row[1], "unknown"),
+                    "name": _names.get(row[1], "unknown"),
                     "temperature": row[2],
                     "humidity": row[3],
                 }
@@ -267,6 +272,12 @@ class MeasurementDatabase:
         end = datetime.now(tz=ltz)
         start = end - d
         return self.retrieveMeasurements(stationid, start, end)
+
+    def uniqueStations(self):
+        conn = self.connection
+        cursor = conn.cursor()
+        cursor.execute("SELECT DISTINCT(Stationid) FROM Measurements")
+        return [row[0] for row in cursor.fetchall()]
 
     def names(self, stationid, name=None):
         """
