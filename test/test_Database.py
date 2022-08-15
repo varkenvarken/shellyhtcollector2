@@ -105,16 +105,4 @@ class TestMeasurements:
         m1 = [m for m in r if m["stationid"] == "test-100001"]
         assert len(m1) == 1
 
-    def test_lastMeasurementsAsHTML(self, database):
-        database.names(
-            "test-100001", "testroom1"
-        )  # without a stationid mapping we never get anything back
-        database.names(
-            "test-100002", "testroom2"
-        )  # without a stationid mapping we never get anything back
-        start = datetime.now()
-        sleep(1)
-        database.storeMeasurement(Database.Measurement("test-100001", 10, 40))
-        database.storeMeasurement(Database.Measurement("test-100002", 15, 45))
-        html = database.lastMeasurementsAsHTML("*")
-        assert type(html) is str
+

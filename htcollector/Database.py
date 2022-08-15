@@ -17,7 +17,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220815112045
+#  version: 20220815134637
 
 import re
 import mariadb
@@ -222,52 +222,6 @@ class MeasurementDatabase:
                 for row in rows
             ]
         return rows
-
-    def lastMeasurementsAsHTML(self, stationid):
-        """
-        Return the last measurement data for a station or all stations in HTML format.
-
-        Args:
-            stationid (str): the stationid or an asterisk '*'
-
-        Returns:
-            str: an HTML page
-        """
-        ms = self.retrieveLastMeasurement(stationid)
-        mdivs = "\n".join(
-            f"""
-            <div class="measurement{' late' if m['deltat'].total_seconds()>24*3600 else ''}" id="{m["stationid"]}">
-            <div class="station">{m["name"]}</div>
-            <div class="time" data-time="{m["time"]}"></div>
-            <div class="temp">{m["temperature"]:.1f}<span class="degrees">°C</span></div>
-            <div class="hum">{m["humidity"]:.0f}<span class=percent>%</span></div>
-            </div>"""
-            for m in ms
-        )
-        style = """
-        .body {width:100%; }
-        .measurements {width: 90%;}
-        .measurement {float:left; width:200px;}
-        .station {float:left; font-size:16pt;}
-        .time {float:left; font-size:12pt;}
-        .temp {float:left; clear:both; font-size:40pt;}
-        .hum {float:left; font-size:12pt;}
-        .late { background-color:red; }
-        """
-        html = f"""<html>
-        <head><meta charset="UTF-8"><meta http-equiv="refresh" content="300"><title>Temperatuur binnen</title>
-        <style>{style}</style>
-        </head>
-        <body>
-        <div class="measurements">
-        {mdivs}
-        </div>
-        </body>
-        <script>document.querySelectorAll("[data-time]").forEach(function(e){{d=new Date(e.getAttribute("data-time"));e.innerHTML=d.getHours() + ":" + d.getMinutes().toString().padStart(2, '0')}})</script>
-        </html>
-        """
-        print(html)
-        return html
 
     def retrieveMeasurementsLast24Hours(self, stationid):
         ltz = tz.tzlocal()

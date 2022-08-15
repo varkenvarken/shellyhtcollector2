@@ -17,7 +17,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220814131140
+#  version: 20220815140019
 
 from json import dumps
 import re
@@ -94,7 +94,39 @@ class InterceptorHandlerFactory:
                         self.send_response(HTTPStatus.INTERNAL_SERVER_ERROR)
                 elif m := re.match(self.htmlpattern, self.path):
                     try:
-                        html = bytes(db.lastMeasurementsAsHTML("*"), encoding="UTF-8")
+                        ms = db.retrieveLastMeasurement("*")
+                        mdivs = "\n".join(
+                            f"""
+                            <div class="measurement{' late' if m['deltat'].total_seconds()>24*3600 else ''}" id="{m["stationid"]}">
+                            <div class="station">{m["name"]}</div>
+                            <div class="time" data-time="{m["time"]}"></div>
+                            <div class="temp">{m["temperature"]:.1f}<span class="degrees">°C</span></div>
+                            <div class="hum">{m["humidity"]:.0f}<span class=percent>%</span></div>
+                            </div>"""
+                            for m in ms
+                        )
+                        style = """
+                        .body {width:100%; }
+                        .measurements {width: 90%;}
+                        .measurement {float:left; width:200px;}
+                        .station {float:left; font-size:16pt;}
+                        .time {float:left; font-size:12pt;}
+                        .temp {float:left; clear:both; font-size:40pt;}
+                        .hum {float:left; font-size:12pt;}
+                        .late { background-color:red; }
+                        """
+                        html = bytes(f"""<html>
+                        <head><meta charset="UTF-8"><meta http-equiv="refresh" content="300"><title>Temperatuur binnen</title>
+                        <style>{style}</style>
+                        </head>
+                        <body>
+                        <div class="measurements">
+                        {mdivs}
+                        </div>
+                        </body>
+                        <script>document.querySelectorAll("[data-time]").forEach(function(e){{d=new Date(e.getAttribute("data-time"));e.innerHTML=d.getHours() + ":" + d.getMinutes().toString().padStart(2, '0')}})</script>
+                        </html>
+                        """, "UTF-8")
                         self.send_response(HTTPStatus.OK)
                         self.send_header("Content-type", "text/html")
                         self.send_header("Content-Length", str(len(html)))
