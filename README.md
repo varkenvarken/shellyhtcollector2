@@ -15,13 +15,15 @@ Shelly HT devices can be configured to send their measurements to a configurable
 
 `http://mymachine:8083/sensorlog?hum=24&temp=42.38&id=shellyht-1234FA`
 
-`htcollector` is a solution that intercepts these requests and logs the data in a database. It also provides means to associat meaningful labels with the station-ids and generate html, json or a png image with the latest measurements.
+where the part `http://mymachine:8083/sensorlog` is something you configure in the sensor itself.
+
+`htcollector` is a solution that intercepts these requests and logs the data in a database. It also provides means to associate meaningful labels with the station-ids and generate html, json or a png image with the latest measurements.
 
 ## Easy installation using Docker
 
 `htcollector` is provided as an easy to use [Docker solution](https://hub.docker.com/u/varkenvarken) too:
 
-You can simply download just a file with environment variables and a docker compose file and start that up (watch the long curl lines!):
+You can simply download just a file with environment variables and a docker compose file and start that up with `docker compose` (watch the long curl lines!):
 
 ```bash
 mkdir htcollector-docker
@@ -39,9 +41,9 @@ By default the htcollector is configured to listen on port 8083 for incoming mea
 
 When measurements start getting logged, you can go to the same webserver to get an html page with the last measurements:
 
-`http://mymachine:8083/html?id=shellyht-1234FA`
+`http://mymachine:8083/html`
 
-You can associate a meaningfull label with
+You can associate a meaningful label with any station, for example:
 
 `http://mymachine:8083/name?id=shellyht-1234FA&name=Kitchen`
 
@@ -65,7 +67,9 @@ flowchart LR
     s4[shellyht] --> w[webserver]
 ```
 ## Installation as a library
-## Install mariadb connector for Python
+
+You can of course build your own solution on top of the htcollector module but that takes a few steps. Installing the htcollector package from Pypi is simple enough but it also depends on the MariaDB connector.
+### Install mariadb connector for Python
 The `mariadb` python module is not pure Python and depends on `libmariadb`, so setup is less straight forward than you would hope:
 ``` bash
 wget https://downloads.mariadb.com/MariaDB/mariadb_repo_setup
@@ -77,7 +81,7 @@ sudo python3 -m pip install mariadb
 ```
 Here we have chosen to install it for everyone, but if you used a virtual environment your could do away with the `sudo`s
 
-## Install the package
+### Install the package
 
 Install it directly from PyPi
 
@@ -142,6 +146,6 @@ The path of a typical GET request will look for example like:
 /sensorlog?hum=54&temp=23.4&id=shellyht-6A566F
 ```
 
-The Webserver will only accept GET request that have that exact format.
+The Webserver will *only* accept GET request that have that exact format.
 
 
