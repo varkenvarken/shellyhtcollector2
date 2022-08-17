@@ -17,7 +17,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220817155341
+#  version: 20220817170514
 
 from json import dumps
 import mimetypes
@@ -65,7 +65,7 @@ class InterceptorHandlerFactory:
                 re.IGNORECASE,
             )
             staticpattern = re.compile(
-                r"^(/static/(?P<resource>\w+)$",
+                r"^/static/(?P<resource>.+)$",
                 re.IGNORECASE,
             )
 
@@ -172,13 +172,17 @@ class InterceptorHandlerFactory:
                     elif m := re.match(self.staticpattern, self.path):
                         filepath = Path(static_directory) / m.group("resource")
                         mime_type = mimetypes.guess_type(filepath)[0]
-                        with open(filepath, "rb") as f:
-                            b = f.read()
-                            self.send_header("Content-type", mime_type)
-                            self.send_header("Content-Length", str(len(b)))
-                            self.end_headers()
-                            self.wfile.write(bytes(html, "UTF-8"))
-                            return
+                        try:
+                            with open(filepath, "rb") as f:
+                                b = f.read()
+                                self.send_response(HTTPStatus.OK)
+                                self.send_header("Content-type", mime_type)
+                                self.send_header("Content-Length", str(len(b)))
+                                self.end_headers()
+                                self.wfile.write(b)
+                                return
+                        except FileNotFoundError:
+                            self.send_response(HTTPStatus.NOT_FOUND)
                     else:
                         self.send_response(HTTPStatus.FORBIDDEN)
                 except Exception as e:

@@ -17,14 +17,12 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220814111956
+#  version: 20220817155609
 
 import argparse
-from datetime import datetime
 from sys import stderr, exit
 from os import environ
-
-from dateutil import tz
+import logging
 
 from .Server import Interceptor
 from .Database import MeasurementDatabase
@@ -75,6 +73,20 @@ def get_args(arguments=None):
         help="address to bind to",
     )
     parser.add_argument(
+        "-l",
+        "--loglevel",
+        type=str,
+        default=environ.get("LOGLEVEL", "INFO"),
+        help="verbosity of log messages",
+    )
+    parser.add_argument(
+        "-r",
+        "--resourcedir",
+        type=str,
+        default=environ.get("RESOURCEDIR", "./static"),
+        help="directory containing static resources",
+    )
+    parser.add_argument(
         "-x", "--ping", action="store_true", help="ping database end exit"
     )
     return parser.parse_args(arguments)
@@ -82,19 +94,22 @@ def get_args(arguments=None):
 
 if __name__ == "__main__":
     args = get_args()
+
+    logging.basicConfig(format="%(asctime)s %(message)s", level=args.loglevel)
+
     db = MeasurementDatabase(
         args.database, args.dbhost, args.dbport, args.dbuser, args.dbpassword
     )
 
+    logging.info(
+        f"OK: database {args.database} can be reached on {args.dbhost}:{args.dbport} by {args.dbuser}"
+    )
     if args.ping:
         exit()
 
-    print(
-        f"starting server, listening on {args.bind}:{args.port}",
-        file=stderr,
-        flush=True,
-    )
+    logging.info(f"starting server, listening on {args.bind}:{args.port}")
+
     while True:  # apparently serve_forever() does return on a 104 error
-        server = Interceptor((args.bind, args.port), db)
+        server = Interceptor((args.bind, args.port), db, args.resourcedir)
         server.serve_forever()
-        print("restarting server on a 104 error", file=stderr, flush=True)
+        logging.warning("restarting server on a 104 error")

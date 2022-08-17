@@ -2,9 +2,12 @@ import pytest
 from io import BytesIO as IO
 from unittest import mock
 from datetime import datetime, timedelta
+import logging
 
 from htcollector.Server import InterceptorHandlerFactory
 from htcollector.Database import MeasurementDatabase, Measurement
+
+logging.basicConfig(format="%(asctime)s %(message)s", level="INFO")
 
 
 @pytest.fixture(scope="class")
@@ -60,7 +63,7 @@ def version_string(self):
 class TestInterceptor:
     def test_GET_OK(self, database, capsys):
         stationid = "testid-123456"
-        interceptorhandler = InterceptorHandlerFactory.getHandler(database)
+        interceptorhandler = InterceptorHandlerFactory.getHandler(database, "./static")
 
         with mock.patch.object(interceptorhandler, "finish", finish):
             with mock.patch.object(
@@ -93,7 +96,7 @@ class TestInterceptor:
 
     def test_GET_FORBIDDEN(self, database, capsys):
         stationid = "testid-@123456"  # contains an illegal character
-        interceptorhandler = InterceptorHandlerFactory.getHandler(database)
+        interceptorhandler = InterceptorHandlerFactory.getHandler(database, "./static")
 
         with mock.patch.object(interceptorhandler, "finish", finish):
             with mock.patch.object(
@@ -129,7 +132,7 @@ class TestInterceptor:
     def test_GET_SERVER_ERROR(self, database, capsys):
         stationid = "testid-654321"
         interceptorhandler = InterceptorHandlerFactory.getHandler(
-            None
+            None, "./static"
         )  # no database reference will force an exception
 
         with mock.patch.object(interceptorhandler, "finish", finish):
@@ -165,7 +168,7 @@ class TestInterceptor:
 
     def test_GET_GRAPH(self, database, capsys):
         stationid = "graphid-123456"
-        interceptorhandler = InterceptorHandlerFactory.getHandler(database)
+        interceptorhandler = InterceptorHandlerFactory.getHandler(database, "./static")
 
         database.names(
             stationid, "testroom1"
@@ -193,7 +196,7 @@ class TestInterceptor:
 
     def test_GET_HTML_all(self, database, capsys):
         stationid = "htmlid-123456"
-        interceptorhandler = InterceptorHandlerFactory.getHandler(database)
+        interceptorhandler = InterceptorHandlerFactory.getHandler(database, "./static")
 
         database.names(
             stationid, "htmlroom1"
@@ -219,7 +222,7 @@ class TestInterceptor:
 
     def test_GET_HTML_specific(self, database, capsys):
         stationid = "htmlid-333333"
-        interceptorhandler = InterceptorHandlerFactory.getHandler(database)
+        interceptorhandler = InterceptorHandlerFactory.getHandler(database, "./static")
 
         database.names(
             stationid, "htmlroom2"
@@ -247,7 +250,7 @@ class TestInterceptor:
 
     def test_GET_HTML_fail(self, database, capsys):
         stationid = "htmlid-666666"
-        interceptorhandler = InterceptorHandlerFactory.getHandler(database)
+        interceptorhandler = InterceptorHandlerFactory.getHandler(database, "./static")
 
         database.names(
             stationid, "htmlroom3"
@@ -278,7 +281,7 @@ class TestInterceptor:
 
     def test_GET_JSON_all(self, database, capsys):
         stationid = "jsonid-123456"
-        interceptorhandler = InterceptorHandlerFactory.getHandler(database)
+        interceptorhandler = InterceptorHandlerFactory.getHandler(database, "./static")
 
         database.names(
             stationid, "json room1"
@@ -304,7 +307,7 @@ class TestInterceptor:
 
     def test_GET_JSON_specific(self, database, capsys):
         stationid = "jsonid-333333"
-        interceptorhandler = InterceptorHandlerFactory.getHandler(database)
+        interceptorhandler = InterceptorHandlerFactory.getHandler(database, "./static")
 
         database.names(
             stationid, "json room2"
@@ -332,7 +335,7 @@ class TestInterceptor:
 
     def test_GET_JSON_fail(self, database, capsys):
         stationid = "jsonid-666"
-        interceptorhandler = InterceptorHandlerFactory.getHandler(database)
+        interceptorhandler = InterceptorHandlerFactory.getHandler(database, "./static")
 
         database.names(
             stationid, "json room3"
@@ -365,7 +368,7 @@ class TestInterceptor:
         stationid = "newname-123456"
         name = "NewName"
 
-        interceptorhandler = InterceptorHandlerFactory.getHandler(database)
+        interceptorhandler = InterceptorHandlerFactory.getHandler(database, "./static")
         with mock.patch.object(interceptorhandler, "finish", finish):
             with mock.patch.object(
                 interceptorhandler, "date_time_string", date_time_string
@@ -386,7 +389,7 @@ class TestInterceptor:
                         print(captured.out)
                         assert ihinstance.wfile.getvalue()[:15] == b"HTTP/1.0 200 OK"
 
-        interceptorhandler = InterceptorHandlerFactory.getHandler(database)
+        interceptorhandler = InterceptorHandlerFactory.getHandler(database, "./static")
         with mock.patch.object(interceptorhandler, "finish", finish):
             with mock.patch.object(
                 interceptorhandler, "date_time_string", date_time_string
@@ -404,3 +407,45 @@ class TestInterceptor:
                         print(captured.out)
                         assert ihinstance.wfile.getvalue()[:15] == b"HTTP/1.0 200 OK"
 
+    def test_GET_STATIC_fail(self, database, capsys):
+        interceptorhandler = InterceptorHandlerFactory.getHandler(database, "./static")
+
+        with mock.patch.object(interceptorhandler, "finish", finish):
+            with mock.patch.object(
+                interceptorhandler, "date_time_string", date_time_string
+            ):
+                with mock.patch.object(
+                    interceptorhandler, "version_string", version_string
+                ):
+                    with mock.patch.object(interceptorhandler, "wbufsize", lambda: 1):
+                        request = MockRequest(b"/static/unknown.resource")
+                        ihinstance = interceptorhandler(
+                            request, ("127.0.0.1", 12345), "testserver.example.org"
+                        )
+                        captured = capsys.readouterr()
+                        print(captured.out)
+                        print(captured.err)
+                        assert (
+                            ihinstance.wfile.getvalue()[:22]
+                            == b"HTTP/1.0 404 Not Found"
+                        )
+
+    def test_GET_STATIC_stylesheet(self, database, capsys):
+        interceptorhandler = InterceptorHandlerFactory.getHandler(database, "./static")
+
+        with mock.patch.object(interceptorhandler, "finish", finish):
+            with mock.patch.object(
+                interceptorhandler, "date_time_string", date_time_string
+            ):
+                with mock.patch.object(
+                    interceptorhandler, "version_string", version_string
+                ):
+                    with mock.patch.object(interceptorhandler, "wbufsize", lambda: 1):
+                        request = MockRequest(b"/static/css/stylesheet.css")
+                        ihinstance = interceptorhandler(
+                            request, ("127.0.0.1", 12345), "testserver.example.org"
+                        )
+                        captured = capsys.readouterr()
+                        print(captured.out)
+                        print(captured.err)
+                        assert ihinstance.wfile.getvalue()[:15] == b"HTTP/1.0 200 OK"
