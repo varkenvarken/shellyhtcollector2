@@ -17,7 +17,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220815134637
+#  version: 20220817093244
 
 import re
 import mariadb
@@ -224,13 +224,6 @@ class MeasurementDatabase:
                 for row in rows
             ]
         return rows
-
-    def retrieveMeasurementsLast24Hours(self, stationid):
-        ltz = tz.tzlocal()
-        d = timedelta(hours=24)
-        end = datetime.now(tz=ltz)
-        start = end - d
-        return self.retrieveMeasurements(stationid, start, end)
 
     def uniqueStations(self):
         conn = self.connection
