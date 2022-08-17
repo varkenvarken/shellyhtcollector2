@@ -17,15 +17,18 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220815160549
+#  version: 20220817155341
 
 from json import dumps
+import mimetypes
+from pathlib import Path
 import re
 from io import BytesIO as IO
 from datetime import datetime, timedelta
 from dateutil import tz
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+import logging
 
 from .Database import Measurement
 from .Graph import graph
@@ -39,7 +42,7 @@ class InterceptorHandlerFactory:
     """
 
     @staticmethod
-    def getHandler(db):
+    def getHandler(db, static_directory):
         class InterceptorHandler(BaseHTTPRequestHandler):
             querypattern = re.compile(
                 r"^/sensorlog\?hum=(?P<humidity>\d+(\.\d+)?)\&temp=(?P<temperature>\d+(\.\d+)?)\&id=(?P<stationid>[a-z01-9-]+)$",
@@ -61,11 +64,15 @@ class InterceptorHandlerFactory:
                 r"^(/name\?id=(?P<stationid>[a-z01-9-]+)\&name=(?P<name>([a-z01-9-]|\s)+))|(/names)$",
                 re.IGNORECASE,
             )
+            staticpattern = re.compile(
+                r"^(/static/(?P<resource>\w+)$",
+                re.IGNORECASE,
+            )
 
             def do_GET(self):
-                print(self.path, flush=True)
-                if m := re.match(self.querypattern, self.path):
-                    try:
+                logging.info(self.path)
+                try:
+                    if m := re.match(self.querypattern, self.path):
                         measurement = Measurement(
                             m.group("stationid"),
                             m.group("temperature"),
@@ -73,11 +80,7 @@ class InterceptorHandlerFactory:
                         )
                         db.storeMeasurement(measurement)
                         self.send_response(HTTPStatus.OK)
-                    except Exception as e:
-                        print(e)
-                        self.send_response(HTTPStatus.INTERNAL_SERVER_ERROR)
-                elif m := re.match(self.graphpattern, self.path):
-                    try:
+                    elif m := re.match(self.graphpattern, self.path):
                         now = datetime.now(tz=tz.tzlocal())
                         yesterday = now - timedelta(1)
                         f = IO(b"")
@@ -89,11 +92,8 @@ class InterceptorHandlerFactory:
                         self.end_headers()
                         self.wfile.write(png)
                         f.close()
-                    except Exception as e:
-                        print(e)
-                        self.send_response(HTTPStatus.INTERNAL_SERVER_ERROR)
-                elif m := re.match(self.htmlpattern, self.path):
-                    try:
+                        return
+                    elif m := re.match(self.htmlpattern, self.path):
                         ms = db.retrieveLastMeasurement(m.group("stationid"))
                         mdivs = "\n".join(
                             f"""
@@ -135,11 +135,8 @@ class InterceptorHandlerFactory:
                         self.send_header("Content-Length", str(len(html)))
                         self.end_headers()
                         self.wfile.write(html)
-                    except Exception as e:
-                        print(e)
-                        self.send_response(HTTPStatus.INTERNAL_SERVER_ERROR)
-                elif m := re.match(self.jsonpattern, self.path):
-                    try:
+                        return
+                    elif m := re.match(self.jsonpattern, self.path):
                         json = bytes(
                             dumps(
                                 db.retrieveLastMeasurement(m.group("stationid")),
@@ -152,11 +149,8 @@ class InterceptorHandlerFactory:
                         self.send_header("Content-Length", str(len(json)))
                         self.end_headers()
                         self.wfile.write(json)
-                    except Exception as e:
-                        print(e)
-                        self.send_response(HTTPStatus.INTERNAL_SERVER_ERROR)
-                elif m := re.match(self.namespattern, self.path):
-                    try:
+                        return
+                    elif m := re.match(self.namespattern, self.path):
                         if not self.path.startswith("/names"):
                             stationid = m.group("stationid")
                             name = m.group("name")
@@ -174,11 +168,22 @@ class InterceptorHandlerFactory:
                         self.send_header("Content-Length", str(len(html)))
                         self.end_headers()
                         self.wfile.write(bytes(html, "UTF-8"))
-                    except Exception as e:
-                        print(e)
-                        self.send_response(HTTPStatus.INTERNAL_SERVER_ERROR)
-                else:
-                    self.send_response(HTTPStatus.FORBIDDEN)
+                        return
+                    elif m := re.match(self.staticpattern, self.path):
+                        filepath = Path(static_directory) / m.group("resource")
+                        mime_type = mimetypes.guess_type(filepath)[0]
+                        with open(filepath, "rb") as f:
+                            b = f.read()
+                            self.send_header("Content-type", mime_type)
+                            self.send_header("Content-Length", str(len(b)))
+                            self.end_headers()
+                            self.wfile.write(bytes(html, "UTF-8"))
+                            return
+                    else:
+                        self.send_response(HTTPStatus.FORBIDDEN)
+                except Exception as e:
+                    logging.exception(e)
+                    self.send_response(HTTPStatus.INTERNAL_SERVER_ERROR)
                 self.end_headers()
 
         return InterceptorHandler
@@ -187,5 +192,5 @@ class InterceptorHandlerFactory:
 class Interceptor(ThreadingHTTPServer):
     allow_reuse_address = True
 
-    def __init__(self, server_address, db):
-        super().__init__(server_address, InterceptorHandlerFactory.getHandler(db))
+    def __init__(self, server_address, db, static_directory):
+        super().__init__(server_address, InterceptorHandlerFactory.getHandler(db, static_directory))

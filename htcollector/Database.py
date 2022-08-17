@@ -17,8 +17,9 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220817093244
+#  version: 20220817153031
 
+import logging
 import re
 import mariadb
 from datetime import datetime, timedelta
@@ -151,7 +152,6 @@ class MeasurementDatabase:
             )
             rows = cursor.fetchall()
         else:
-            print("timestamps", starttime, endtime)
             cursor = self.connection.cursor()
             cursor.execute(
                 f"""SELECT Timestamp, Stationid, Temperature, Humidity
@@ -186,7 +186,7 @@ class MeasurementDatabase:
         Returns:
             list: a list of dict objects, one for each station
         """
-        print(stationid, _names, _unique_stations)
+        logging.debug("retrieveLastMeasurement", stationid, _names, _unique_stations)
         if _names is None:
             _names = {nm[0]: nm[1] for nm in self.names("*")}
 
