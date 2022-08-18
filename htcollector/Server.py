@@ -17,7 +17,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220817170514
+#  version: 20220818105605
 
 from json import dumps
 import mimetypes
@@ -197,4 +197,6 @@ class Interceptor(ThreadingHTTPServer):
     allow_reuse_address = True
 
     def __init__(self, server_address, db, static_directory):
-        super().__init__(server_address, InterceptorHandlerFactory.getHandler(db, static_directory))
+        super().__init__(
+            server_address, InterceptorHandlerFactory.getHandler(db, static_directory)
+        )
