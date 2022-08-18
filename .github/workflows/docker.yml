@@ -6,7 +6,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: htcollector
+  IMAGE_NAME: ${{ github.actor }}/htcollector
 
 jobs:
   build-and-push-image:
