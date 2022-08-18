@@ -1,4 +1,4 @@
-name: Create and publish a Docker image
+name: Create and publish the MariaDB image
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.actor }}/htcollector
+  IMAGE_NAME: ${{ github.actor }}/mariadb
 
 jobs:
   build-and-push-image:
@@ -36,7 +36,7 @@ jobs:
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
           context: .
-          file: docker/Dockerfile
+          file: docker/Dockerfile-mariadb
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
