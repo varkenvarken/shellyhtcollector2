@@ -3,6 +3,8 @@ name: Create and publish the MariaDB image
 on:
   push:
     branches: ['master', 'main']
+    tags:
+      - 'v*'
 
 env:
   REGISTRY: ghcr.io
