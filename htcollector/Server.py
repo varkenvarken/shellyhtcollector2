@@ -17,7 +17,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220819111541
+#  version: 20220819120703
 
 from json import dumps
 import mimetypes
@@ -126,7 +126,7 @@ class InterceptorHandlerFactory:
 <meta charset="UTF-8">
 <meta http-equiv="refresh" content="300">
 <title>Temperatuur binnen</title>
-<link href="/static/css/stylesheet.css" rel="stylesheet"></head>
+<link href="static/css/stylesheet.css" rel="stylesheet"></head>
 <body>
 <div class="measurements">
 {mdivs}
@@ -165,7 +165,7 @@ class InterceptorHandlerFactory:
     <meta charset="UTF-8">
     <meta http-equiv="refresh" content="300">
     <title>Indoor temperature</title>
-    <link href="/static/css/stylesheet.css" rel="stylesheet">
+    <link href="static/css/stylesheet.css" rel="stylesheet">
 </head>
 <body>
     <div id="measurements"></div>

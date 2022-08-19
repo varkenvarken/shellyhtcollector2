@@ -7,7 +7,7 @@ long_description = (this_directory / "README.md").read_text()
 
 setup(
     name="htcollector",
-    version="0.1.10",
+    version="0.1.11",
     description="Tools to log updates from Shelly HT devices",
     long_description=long_description,
     long_description_content_type="text/markdown",
