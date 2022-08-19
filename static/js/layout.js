@@ -1,5 +1,19 @@
 let width, height, gradient;
 
+const chartAreaBorder = {
+    id: 'chartAreaBorder',
+    beforeDraw(chart, args, options) {
+        const { ctx, chartArea: { left, top, width, height } } = chart;
+        ctx.save();
+        ctx.strokeStyle = options.borderColor;
+        ctx.lineWidth = options.borderWidth;
+        ctx.setLineDash(options.borderDash || []);
+        ctx.lineDashOffset = options.borderDashOffset;
+        ctx.strokeRect(left, top, width, height);
+        ctx.restore();
+    }
+};
+
 function datedisplay(s) {
     d = new Date(s);
     return d.getHours() + ":" + d.getMinutes().toString().padStart(2, '0');
@@ -15,7 +29,8 @@ function getGradient(ctx, chartArea) {
         height = chartHeight;
         gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
         gradient.addColorStop(0, "blue");
-        gradient.addColorStop(0.5, "yellow");
+        gradient.addColorStop(0.33, "green");
+        gradient.addColorStop(0.66, "yellow");
         gradient.addColorStop(1, "red");
     }
 
@@ -23,7 +38,12 @@ function getGradient(ctx, chartArea) {
 };
 
 function sparkline(ctx, stationid) {
+    // extend the last measurement to now
     temperature_data = temperature_data_map[stationid];
+    last_point = temperature_data.slice(-1)[0]; // a slice returns an array
+    last_point.timestamp = new Date().toISOString();
+    temperature_data.push(last_point);
+
     const myChart = new Chart(ctx, {
         type: 'line',
         data: {
@@ -32,9 +52,10 @@ function sparkline(ctx, stationid) {
                 fill: false,
                 pointRadius: 0,
                 spanGaps: true,
-                tension: 0.2
+                tension: 0.5
             }]
         },
+        plugins: [chartAreaBorder],
         options: {
             parsing: {
                 xAxisKey: 'timestamp',
@@ -43,11 +64,17 @@ function sparkline(ctx, stationid) {
             scales: {
                 x: {
                     type: 'time',
-                    display: false,
+                    //display: false,
+                    time: { displayFormats: { hour: 'HH' }, unit: 'hour', unitStepSize: 6, },
                     min: new Date(Date.now() - 86400 * 1000).toISOString(),
+                    max: new Date().toISOString(),
+                    grid: { color: '#C0C0C0' },
+                    ticks: { stepSize: 6 },
                 },
                 y: {
                     display: false,
+                    suggestedMin: 0,
+                    suggestedMax: 35,
                 }
             },
             events: [],
@@ -72,7 +99,11 @@ function sparkline(ctx, stationid) {
                 },
                 tooltips: {
                     display: false
-                }
+                },
+                chartAreaBorder: {
+                    borderColor: '#a0a0a0',
+                    borderWidth: 2,
+                },
             },
         }
     });
@@ -81,7 +112,7 @@ function sparkline(ctx, stationid) {
 $.each(station_data, function (index, element) {
     station = `<div class="station">${element.name}</div>`;
     time = `<div class="time" data-time="${element.time}">${datedisplay(element.time)}</div>`;
-    temp = `<div class="temp">${element.temperature}<span class="degrees">°C</span></div>`;
+    temp = `<div class="temp">${Number(element.temperature).toFixed(1)}<span class="degrees">°C</span></div>`;
     hum = `<div class="hum">${element.humidity}<span class=percent>%</span></div>`;
     canvasid = "canvas-" + element.stationid;
     spark = `<div><canvas height="60" width="180" id="${canvasid}"></canvas></div>`;
