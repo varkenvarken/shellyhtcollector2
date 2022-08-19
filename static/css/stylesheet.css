@@ -1,3 +1,37 @@
-div {
-    background-color: beige;
-}
+                        .body {
+                            width: 100%;
+                        }
+
+                        .measurements {
+                            width: 90%;
+                        }
+
+                        .measurement {
+                            float: left;
+                            width: 200px;
+                        }
+
+                        .station {
+                            float: left;
+                            font-size: 16pt;
+                        }
+
+                        .time {
+                            float: left;
+                            font-size: 12pt;
+                        }
+
+                        .temp {
+                            float: left;
+                            clear: both;
+                            font-size: 40pt;
+                        }
+
+                        .hum {
+                            float: left;
+                            font-size: 12pt;
+                        }
+
+                        .late {
+                            background-color: red;
+                        }

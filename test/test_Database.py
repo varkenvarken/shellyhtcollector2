@@ -105,3 +105,14 @@ class TestMeasurements:
         m1 = [m for m in r if m["stationid"] == "test-100001"]
         assert len(m1) == 1
 
+    def test_retrieveDatetimeBefore(self, database):
+        stationid = "mark-121212"
+        start = datetime.now()
+        database.storeMeasurement(Database.Measurement(stationid, 10, 40))
+        sleep(1)
+        dt1 = datetime.now()
+        sleep(1)
+        database.storeMeasurement(Database.Measurement(stationid, 15, 45))
+        r = database.retrieveDatetimeBefore(stationid, dt1)
+        assert type(r) is datetime
+        assert r.timestamp() == approx(start.timestamp(), abs=0.1)

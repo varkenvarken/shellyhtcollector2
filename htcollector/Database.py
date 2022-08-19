@@ -17,7 +17,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220817153031
+#  version: 20220819113121
 
 import logging
 import re
@@ -224,6 +224,31 @@ class MeasurementDatabase:
                 for row in rows
             ]
         return rows
+
+    def retrieveDatetimeBefore(self, stationid, t):
+        """
+        Returns the time of the last measurement preceding a given time.
+
+        Args:
+            stationid (str): the station id
+            t (datetime): the timestamp
+
+        Returns:
+            datetime or None: the time of the last measurement preceding a given time or None if the isn one
+        """
+
+        logging.debug("retrieveDatetimeBefore", stationid, t)
+
+        cursor = self.connection.cursor()
+        cursor.execute(
+            """SELECT Timestamp as 'Timestamp [timestamp]'
+               FROM Measurements
+               WHERE Stationid = ? AND Timestamp < ? ORDER BY timestamp DESC LIMIT 1;""",
+            (stationid, t),
+        )
+        rows = cursor.fetchall()
+        # mariadb / mysql timestamps are in UTC but returned as 'naive' datetime objects
+        return rows[0][0].replace(tzinfo=tz.UTC) if len(rows) else None
 
     def uniqueStations(self):
         conn = self.connection

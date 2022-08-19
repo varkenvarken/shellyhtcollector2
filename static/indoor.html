@@ -1,0 +1,119 @@
+<html>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"
+    integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"
+    integrity="sha256-+8RZJua0aEWg+QVVKg4LEzEEm/8RFez5Tb4JBNiV5xA=" crossorigin="anonymous"></script>
+<script
+    src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="refresh" content="300">
+    <title>Indoor temperature</title>
+    <link href="/static/css/stylesheet.css" rel="stylesheet">
+</head>
+
+<body>
+    <div id="measurements"></div>
+</body>
+
+<script>
+    let width, height, gradient;
+
+    function datedisplay(s) {
+        d = new Date(s);
+        return d.getHours() + ":" + d.getMinutes().toString().padStart(2, '0');
+    }
+
+    function getGradient(ctx, chartArea) {
+        const chartWidth = chartArea.right - chartArea.left;
+        const chartHeight = chartArea.bottom - chartArea.top;
+        if (gradient === null || width !== chartWidth || height !== chartHeight) {
+            // Create the gradient because this is either the first render
+            // or the size of the chart has changed
+            width = chartWidth;
+            height = chartHeight;
+            gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+            gradient.addColorStop(0, "blue");
+            gradient.addColorStop(0.5, "yellow");
+            gradient.addColorStop(1, "red");
+        }
+
+        return gradient;
+    };
+
+    function sparkline(ctx, stationid) {
+        $.getJSON("http://localhost:8083/json/24?id=" + stationid, function (temperature_data) {
+            const ctx = 'myChart';
+            const myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    datasets: [{
+                        data: temperature_data,
+                        fill: false,
+                        pointRadius: 0,
+                        spanGaps: true,
+                        tension: 0.2
+                    }]
+                },
+                options: {
+                    parsing: {
+                        xAxisKey: 'timestamp',
+                        yAxisKey: 'temperature'
+                    },
+                    scales: {
+                        x: {
+                            type: 'time',
+                            display: false,
+                        },
+                        y: {
+                            display: false,
+                        }
+                    },
+                    events: [],
+                    borderColor: function (context) {
+                        const chart = context.chart;
+                        const { ctx, chartArea } = chart;
+
+                        if (!chartArea) {
+                            // This case happens on initial chart load
+                            return null;
+                        }
+                        return getGradient(ctx, chartArea);
+                    },
+                    borderWidth: 1.5,
+                    responsive: false,
+                    plugins: {
+                        legend: {
+                            display: false,
+                            labels: {
+                                display: false
+                            }
+                        },
+                        tooltips: {
+                            display: false
+                        }
+                    },
+                }
+
+            });
+
+        });
+    }
+
+    $.getJSON("http://localhost:8083/json", function (station_data) {
+        $.each(station_data, function (index, element) {
+            station = `<div class="station">${element.name}</div>`;
+            time = `<div class="time" data-time="${element.time}">${datedisplay(element.time)}</div>`;
+            temp = `<div class="temp">${element.temperature}<span class="degrees">°C</span></div>`;
+            hum = `<div class="hum">${element.humidity}<span class=percent>%</span></div>`;
+            canvasid = "canvas-" + element.stationid;
+            spark = `<div><canvas height="60" width="180" id="${canvasid}"></canvas></div>`;
+            measurement = `<div class="measurement" id="${element.stationid}">${station}${time}${temp}${hum}${spark}</div>`;
+            $("#measurements").append(measurement);
+            sparkline($(`#${canvasid}`)[0].getContext('2d'), element.stationid);
+        });
+    });
+</script>
+
+</html>
