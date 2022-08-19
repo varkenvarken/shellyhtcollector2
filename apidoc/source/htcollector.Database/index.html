@@ -435,8 +435,9 @@
 <span class="c1">#  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,</span>
 <span class="c1">#  MA 02110-1301, USA.</span>
 <span class="c1">#</span>
-<span class="c1">#  version: 20220814134232</span>
+<span class="c1">#  version: 20220819113121</span>
 
+<span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">import</span> <span class="nn">mariadb</span>
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
@@ -569,7 +570,6 @@
             <span class="p">)</span>
             <span class="n">rows</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;timestamps&quot;</span><span class="p">,</span> <span class="n">starttime</span><span class="p">,</span> <span class="n">endtime</span><span class="p">)</span>
             <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
             <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;&quot;&quot;SELECT Timestamp, Stationid, Temperature, Humidity</span>
@@ -592,7 +592,9 @@
 
         <span class="k">return</span> <span class="n">rows</span>
 
-    <span class="k">def</span> <span class="nf">retrieveLastMeasurement</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stationid</span><span class="p">):</span><span id="htcollector.Database.MeasurementDatabase.retrieveLastMeasurement"></span><a class="mkapi-docs-link" title="htcollector.Database.MeasurementDatabase.retrieveLastMeasurement" href="../../htcollector.Database/#htcollector.Database.MeasurementDatabase.retrieveLastMeasurement">DOCS</a>
+    <span class="k">def</span> <span class="nf">retrieveLastMeasurement</span><span class="p">(</span><span id="htcollector.Database.MeasurementDatabase.retrieveLastMeasurement"></span><a class="mkapi-docs-link" title="htcollector.Database.MeasurementDatabase.retrieveLastMeasurement" href="../../htcollector.Database/#htcollector.Database.MeasurementDatabase.retrieveLastMeasurement">DOCS</a>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">stationid</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">_unique_stations</span><span class="o">=</span><span class="kc">None</span>
+    <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the last measurement data for a station or all stations.</span>
 
@@ -602,14 +604,21 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            list: a list of dict objects, one for each station</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">names</span> <span class="o">=</span> <span class="p">{</span><span class="n">nm</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="n">nm</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">nm</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">)}</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;retrieveLastMeasurement&quot;</span><span class="p">,</span> <span class="n">stationid</span><span class="p">,</span> <span class="n">_names</span><span class="p">,</span> <span class="n">_unique_stations</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">_names</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">_names</span> <span class="o">=</span> <span class="p">{</span><span class="n">nm</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="n">nm</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">nm</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">)}</span>
 
-        <span class="k">if</span> <span class="n">stationid</span> <span class="o">==</span> <span class="s2">&quot;*&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">_unique_stations</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">_unique_stations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">uniqueStations</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">stationid</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">rows</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
-            <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;SELECT DISTINCT(Stationid) FROM Measurements&quot;</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">():</span>
-                <span class="n">rows</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">retrieveLastMeasurement</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+            <span class="k">for</span> <span class="n">unique_station</span> <span class="ow">in</span> <span class="n">_unique_stations</span><span class="p">:</span>
+                <span class="n">rows</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">retrieveLastMeasurement</span><span class="p">(</span>
+                        <span class="n">unique_station</span><span class="p">,</span> <span class="n">_names</span><span class="o">=</span><span class="n">_names</span><span class="p">,</span> <span class="n">_unique_stations</span><span class="o">=</span><span class="n">_unique_stations</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># get the data</span>
             <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
@@ -623,10 +632,10 @@
             <span class="c1"># mariadb / mysql timestamps are in UTC but returned as &#39;naive&#39; datetime objects</span>
             <span class="n">rows</span> <span class="o">=</span> <span class="p">[</span>
                 <span class="p">{</span>
-                    <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tzinfo</span><span class="o">=</span><span class="n">tz</span><span class="o">.</span><span class="n">UTC</span><span class="p">)</span><span class="o">.</span><span class="n">astimezone</span><span class="p">(</span><span class="n">tz</span><span class="o">.</span><span class="n">tzlocal</span><span class="p">()),</span>
+                    <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tzinfo</span><span class="o">=</span><span class="n">tz</span><span class="o">.</span><span class="n">UTC</span><span class="p">),</span>
                     <span class="s2">&quot;deltat&quot;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
                     <span class="s2">&quot;stationid&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-                    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">names</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;unknown&quot;</span><span class="p">),</span>
+                    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">_names</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;unknown&quot;</span><span class="p">),</span>
                     <span class="s2">&quot;temperature&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
                     <span class="s2">&quot;humidity&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
                 <span class="p">}</span>
@@ -634,55 +643,36 @@
             <span class="p">]</span>
         <span class="k">return</span> <span class="n">rows</span>
 
-    <span class="k">def</span> <span class="nf">lastMeasurementsAsHTML</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stationid</span><span class="p">):</span><span id="htcollector.Database.MeasurementDatabase.lastMeasurementsAsHTML"></span><a class="mkapi-docs-link" title="htcollector.Database.MeasurementDatabase.lastMeasurementsAsHTML" href="../../htcollector.Database/#htcollector.Database.MeasurementDatabase.lastMeasurementsAsHTML">DOCS</a>
+    <span class="k">def</span> <span class="nf">retrieveDatetimeBefore</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stationid</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span><span id="htcollector.Database.MeasurementDatabase.retrieveDatetimeBefore"></span><a class="mkapi-docs-link" title="htcollector.Database.MeasurementDatabase.retrieveDatetimeBefore" href="../../htcollector.Database/#htcollector.Database.MeasurementDatabase.retrieveDatetimeBefore">DOCS</a>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Return the last measurement data for a station or all stations in HTML format.</span>
+<span class="sd">        Returns the time of the last measurement preceding a given time.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            stationid (str): the stationid or an asterisk &#39;*&#39;</span>
+<span class="sd">            stationid (str): the station id</span>
+<span class="sd">            t (datetime): the timestamp</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            str: an HTML page</span>
+<span class="sd">            datetime or None: the time of the last measurement preceding a given time or None if the isn one</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">ms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">retrieveLastMeasurement</span><span class="p">(</span><span class="n">stationid</span><span class="p">)</span>
-        <span class="n">mdivs</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">            &lt;div class=&quot;measurement</span><span class="si">{</span><span class="s1">&#39; late&#39;</span> <span class="k">if</span> <span class="n">m</span><span class="p">[</span><span class="s1">&#39;deltat&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span><span class="o">&gt;</span><span class="mi">24</span><span class="o">*</span><span class="mi">3600</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span><span class="si">}</span><span class="s2">&quot; id=&quot;</span><span class="si">{</span><span class="n">m</span><span class="p">[</span><span class="s2">&quot;stationid&quot;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;&gt;</span>
-<span class="s2">            &lt;div class=&quot;station&quot;&gt;</span><span class="si">{</span><span class="n">m</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span><span class="si">}</span><span class="s2">&lt;/div&gt;</span>
-<span class="s2">            &lt;div class=&quot;time&quot; data-time=&quot;</span><span class="si">{</span><span class="n">m</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;&gt;</span><span class="si">{</span><span class="n">m</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">%H:%M</span><span class="si">}</span><span class="s2">&lt;/div&gt;</span>
-<span class="s2">            &lt;div class=&quot;temp&quot;&gt;</span><span class="si">{</span><span class="n">m</span><span class="p">[</span><span class="s2">&quot;temperature&quot;</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">&lt;span class=&quot;degrees&quot;&gt;°C&lt;/span&gt;&lt;/div&gt;</span>
-<span class="s2">            &lt;div class=&quot;hum&quot;&gt;</span><span class="si">{</span><span class="n">m</span><span class="p">[</span><span class="s2">&quot;humidity&quot;</span><span class="p">]</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">&lt;span class=percent&gt;%&lt;/span&gt;&lt;/div&gt;</span>
-<span class="s2">            &lt;/div&gt;&quot;&quot;&quot;</span>
-            <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">ms</span>
-        <span class="p">)</span>
-        <span class="n">style</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">        .body {width:100%; }</span>
-<span class="s2">        .measurements {width: 90%;}</span>
-<span class="s2">        .measurement {float:left; width:200px;}</span>
-<span class="s2">        .station {float:left; font-size:16pt;}</span>
-<span class="s2">        .time {float:left; font-size:12pt;}</span>
-<span class="s2">        .temp {float:left; clear:both; font-size:40pt;}</span>
-<span class="s2">        .hum {float:left; font-size:12pt;}</span>
-<span class="s2">        .late { background-color:red; }</span>
-<span class="s2">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;&lt;html&gt;</span>
-<span class="s2">        &lt;head&gt;&lt;meta charset=&quot;UTF-8&quot;&gt;&lt;meta http-equiv=&quot;refresh&quot; content=&quot;300&quot;&gt;&lt;title&gt;Temperatuur binnen&lt;/title&gt;</span>
-<span class="s2">        &lt;style&gt;</span><span class="si">{</span><span class="n">style</span><span class="si">}</span><span class="s2">&lt;/style&gt;</span>
-<span class="s2">        &lt;/head&gt;</span>
-<span class="s2">        &lt;body&gt;</span>
-<span class="s2">        &lt;div class=&quot;measurements&quot;&gt;</span>
-<span class="s2">        </span><span class="si">{</span><span class="n">mdivs</span><span class="si">}</span><span class="s2"></span>
-<span class="s2">        &lt;/div&gt;</span>
-<span class="s2">        &lt;/body&gt;</span>
-<span class="s2">        &lt;/html&gt;</span>
-<span class="s2">        &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">retrieveMeasurementsLast24Hours</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stationid</span><span class="p">):</span>
-        <span class="n">ltz</span> <span class="o">=</span> <span class="n">tz</span><span class="o">.</span><span class="n">tzlocal</span><span class="p">()</span>
-        <span class="n">d</span> <span class="o">=</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">24</span><span class="p">)</span>
-        <span class="n">end</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">tz</span><span class="o">=</span><span class="n">ltz</span><span class="p">)</span>
-        <span class="n">start</span> <span class="o">=</span> <span class="n">end</span> <span class="o">-</span> <span class="n">d</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">retrieveMeasurements</span><span class="p">(</span><span class="n">stationid</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;retrieveDatetimeBefore&quot;</span><span class="p">,</span> <span class="n">stationid</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
+
+        <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+            <span class="sd">&quot;&quot;&quot;SELECT Timestamp as &#39;Timestamp [timestamp]&#39;</span>
+<span class="sd">               FROM Measurements</span>
+<span class="sd">               WHERE Stationid = ? AND Timestamp &lt; ? ORDER BY timestamp DESC LIMIT 1;&quot;&quot;&quot;</span><span class="p">,</span>
+            <span class="p">(</span><span class="n">stationid</span><span class="p">,</span> <span class="n">t</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="n">rows</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+        <span class="c1"># mariadb / mysql timestamps are in UTC but returned as &#39;naive&#39; datetime objects</span>
+        <span class="k">return</span> <span class="n">rows</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tzinfo</span><span class="o">=</span><span class="n">tz</span><span class="o">.</span><span class="n">UTC</span><span class="p">)</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">uniqueStations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">conn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;SELECT DISTINCT(Stationid) FROM Measurements&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()]</span>
 
     <span class="k">def</span> <span class="nf">names</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stationid</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span><span id="htcollector.Database.MeasurementDatabase.names"></span><a class="mkapi-docs-link" title="htcollector.Database.MeasurementDatabase.names" href="../../htcollector.Database/#htcollector.Database.MeasurementDatabase.names">DOCS</a>
         <span class="sd">&quot;&quot;&quot;</span>

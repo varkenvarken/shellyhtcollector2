@@ -415,8 +415,8 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#htcollectordatabasemeasurementdatabaselastmeasurementsashtml" class="md-nav__link">
-    lastMeasurementsAsHTML
+  <a href="#htcollectordatabasemeasurementdatabaseretrievedatetimebefore" class="md-nav__link">
+    retrieveDatetimeBefore
   </a>
   
 </li>
@@ -532,8 +532,8 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#htcollectordatabasemeasurementdatabaselastmeasurementsashtml" class="md-nav__link">
-    lastMeasurementsAsHTML
+  <a href="#htcollectordatabasemeasurementdatabaseretrievedatetimebefore" class="md-nav__link">
+    retrieveDatetimeBefore
   </a>
   
 </li>
@@ -693,15 +693,15 @@
           <span class="mkapi-section-name-body methods">Methods</span> 
         </div>
       <div class="mkapi-section-body methods"><ul class="mkapi-items">
-<li class="method"><code class="mkapi-item-name"><a href="#htcollector.Database.MeasurementDatabase.lastMeasurementsAsHTML">lastMeasurementsAsHTML</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">stationid</code><code class="mkapi-object-parenthesis">)</code>
-<span class="mkapi-item-type">(str)</span>
-<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Return the last measurement data for a station or all stations in HTML format.<a class="mkapi-src-link" href="../source/htcollector.Database/#htcollector.Database.MeasurementDatabase.lastMeasurementsAsHTML" title="Source for htcollector.Database.MeasurementDatabase.lastMeasurementsAsHTML">&lt;/&gt;</a></span></li>
-
 <li class="method"><code class="mkapi-item-name"><a href="#htcollector.Database.MeasurementDatabase.names">names</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">stationid</code>, <code class="mkapi-object-signature">name</code><code class="mkapi-object-parenthesis">)</code>
 <span class="mkapi-item-type">(list)</span>
 <span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Insert or replace a name for a stationid, or return a list of all stations._<a class="mkapi-src-link" href="../source/htcollector.Database/#htcollector.Database.MeasurementDatabase.names" title="Source for htcollector.Database.MeasurementDatabase.names">&lt;/&gt;</a></span></li>
 
-<li class="method"><code class="mkapi-item-name"><a href="#htcollector.Database.MeasurementDatabase.retrieveLastMeasurement">retrieveLastMeasurement</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">stationid</code><code class="mkapi-object-parenthesis">)</code>
+<li class="method"><code class="mkapi-item-name"><a href="#htcollector.Database.MeasurementDatabase.retrieveDatetimeBefore">retrieveDatetimeBefore</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">stationid</code>, <code class="mkapi-object-signature">t</code><code class="mkapi-object-parenthesis">)</code>
+<span class="mkapi-item-type">(datetime or None)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Returns the time of the last measurement preceding a given time.<a class="mkapi-src-link" href="../source/htcollector.Database/#htcollector.Database.MeasurementDatabase.retrieveDatetimeBefore" title="Source for htcollector.Database.MeasurementDatabase.retrieveDatetimeBefore">&lt;/&gt;</a></span></li>
+
+<li class="method"><code class="mkapi-item-name"><a href="#htcollector.Database.MeasurementDatabase.retrieveLastMeasurement">retrieveLastMeasurement</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">stationid</code>, <code class="mkapi-object-signature">_names</code>, <code class="mkapi-object-signature">_unique_stations</code><code class="mkapi-object-parenthesis">)</code>
 <span class="mkapi-item-type">(list)</span>
 <span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Return the last measurement data for a station or all stations.<a class="mkapi-src-link" href="../source/htcollector.Database/#htcollector.Database.MeasurementDatabase.retrieveLastMeasurement" title="Source for htcollector.Database.MeasurementDatabase.retrieveLastMeasurement">&lt;/&gt;</a></span></li>
 
@@ -806,7 +806,7 @@
 <div class='mkapi-object-container'>
   <div class="mkapi-object method code">
     <div class="mkapi-object-kind method">method</div>
-    <h3 id="htcollectordatabasemeasurementdatabaseretrievelastmeasurement" class="mkapi-object-body method"><code class="mkapi-object-name">retrieveLastMeasurement</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">stationid</code><code class="mkapi-object-parenthesis">)</code></h3>
+    <h3 id="htcollectordatabasemeasurementdatabaseretrievelastmeasurement" class="mkapi-object-body method"><code class="mkapi-object-name">retrieveLastMeasurement</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">stationid=None</code>, <code class="mkapi-object-signature">_names=None</code>, <code class="mkapi-object-signature">_unique_stations=None</code><code class="mkapi-object-parenthesis">)</code></h3>
   </div>
   <div class="mkapi-src-link">
     <a class="mkapi-src-link" href="../source/htcollector.Database/#htcollector.Database.MeasurementDatabase.retrieveLastMeasurement" title="Source for htcollector.Database.MeasurementDatabase.retrieveLastMeasurement">&lt;/&gt;</a>
@@ -826,6 +826,8 @@
 <span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">the stationid or an asterisk '*'</span></li>
 
 
+
+
 </ul></div>
     </div>
   <div class="mkapi-section returns">
@@ -840,19 +842,19 @@
     </div>
   
     <div class="mkapi-member">
-      <div class="mkapi-node" id="htcollector.Database.MeasurementDatabase.lastMeasurementsAsHTML">
+      <div class="mkapi-node" id="htcollector.Database.MeasurementDatabase.retrieveDatetimeBefore">
 <div class='mkapi-object-container'>
   <div class="mkapi-object method code">
     <div class="mkapi-object-kind method">method</div>
-    <h3 id="htcollectordatabasemeasurementdatabaselastmeasurementsashtml" class="mkapi-object-body method"><code class="mkapi-object-name">lastMeasurementsAsHTML</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">stationid</code><code class="mkapi-object-parenthesis">)</code></h3>
+    <h3 id="htcollectordatabasemeasurementdatabaseretrievedatetimebefore" class="mkapi-object-body method"><code class="mkapi-object-name">retrieveDatetimeBefore</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">stationid</code>, <code class="mkapi-object-signature">t</code><code class="mkapi-object-parenthesis">)</code></h3>
   </div>
   <div class="mkapi-src-link">
-    <a class="mkapi-src-link" href="../source/htcollector.Database/#htcollector.Database.MeasurementDatabase.lastMeasurementsAsHTML" title="Source for htcollector.Database.MeasurementDatabase.lastMeasurementsAsHTML">&lt;/&gt;</a>
+    <a class="mkapi-src-link" href="../source/htcollector.Database/#htcollector.Database.MeasurementDatabase.retrieveDatetimeBefore" title="Source for htcollector.Database.MeasurementDatabase.retrieveDatetimeBefore">&lt;/&gt;</a>
   </div>
 </div>
 <div class="mkapi-docstring">
 <div class="mkapi-section">
-      <div class="mkapi-section-body"><p>Return the last measurement data for a station or all stations in HTML format.</p></div>
+      <div class="mkapi-section-body"><p>Returns the time of the last measurement preceding a given time.</p></div>
     </div>
   <div class="mkapi-section parameters">
       <div class="mkapi-section-name parameters">
@@ -861,16 +863,20 @@
       <div class="mkapi-section-body parameters"><ul class="mkapi-items">
 <li><code class="mkapi-item-name">stationid</code>
 <span class="mkapi-item-type">(str)</span>
-<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">the stationid or an asterisk '*'</span></li>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">the station id</span></li>
+
+<li><code class="mkapi-item-name">t</code>
+<span class="mkapi-item-type">(datetime)</span>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">the timestamp</span></li>
 
 
 </ul></div>
     </div>
   <div class="mkapi-section returns">
       <div class="mkapi-section-name returns">
-          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(str)</span>
+          <span class="mkapi-section-name-body returns">Returns</span> <span class="mkapi-item-type">(datetime or None)</span>
         </div>
-      <div class="mkapi-section-body returns"><p>an HTML page</p></div>
+      <div class="mkapi-section-body returns"><p>the time of the last measurement preceding a given time or None if the isn one</p></div>
     </div>
   </div>
 
