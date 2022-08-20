@@ -275,10 +275,10 @@ class MeasurementDatabase:
             conn = self.connection
             cursor = conn.cursor()
             cursor.execute("SELECT * FROM StationidToName")
-            stationmap =  {row[0]:row[1] for row in cursor.fetchall()}
+            stationmap = {row[0]: row[1] for row in cursor.fetchall()}
             for s in stationids:
                 if s not in stationmap:
-                    stationmap[s]="Unknown"
+                    stationmap[s] = "Unknown"
             return stationmap
         else:
             conn = self.connection
