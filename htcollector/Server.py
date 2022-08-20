@@ -244,10 +244,10 @@ class InterceptorHandlerFactory:
                     elif m := re.match(self.namespattern, unquote_plus(self.path)):
                         if not self.path.startswith("/names"):
                             logging.info(
-                                ">>>>>>" +
-                                m.group("name") +
-                                self.path +
-                                urlparse(self.path).query,
+                                ">>>>>>"
+                                + m.group("name")
+                                + self.path
+                                + urlparse(self.path).query,
                             )
                             stationid = m.group("stationid")
                             name = m.group("name")
