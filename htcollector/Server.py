@@ -17,7 +17,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220820184730
+#  version: 20220820190054
 
 from json import dumps
 import mimetypes
@@ -28,7 +28,7 @@ from datetime import datetime, timedelta
 from dateutil import tz
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from urllib.parse import urlparse,quote
+from urllib.parse import urlparse, quote, unquote_plus
 import logging
 
 from .Database import Measurement
@@ -77,7 +77,7 @@ class InterceptorHandlerFactory:
             faviconpattern = re.compile(r"^/favicon.ico$")
 
             @staticmethod
-            def checkPath(path:Path):
+            def checkPath(path: Path):
                 for p in path.parts:
                     if p in {".", ".."}:
                         raise ValueError("relative paths are forbidden")
@@ -241,16 +241,22 @@ class InterceptorHandlerFactory:
                         self.end_headers()
                         self.wfile.write(json)
                         return
-                    elif m := re.match(self.namespattern, self.path):
+                    elif m := re.match(self.namespattern, unquote_plus(self.path)):
                         if not self.path.startswith("/names"):
+                            logging.info(
+                                ">>>>>>" +
+                                m.group("name") +
+                                self.path +
+                                urlparse(self.path).query,
+                            )
                             stationid = m.group("stationid")
                             name = m.group("name")
                             names = db.names(stationid, name)
                         else:
                             names = db.names("*")
-                        # TODO make sure url is urlencoded
                         names = "\n".join(
-                            f'<tr><td>{s}</td><td>{n}</td><td><a href="/static/updatename.html?id={s}&name={n}">Change</a></td></tr>' for s,n in names.items()
+                            f'<tr><td>{s}</td><td>{n}</td><td><a href="/static/updatename.html?id={quote(s)}&name={quote(n)}">Change</a></td></tr>'
+                            for s, n in names.items()
                         )
                         self.send_response(HTTPStatus.OK)
                         html = f"""<html><body>
