@@ -1,7 +1,7 @@
 version: '3'
 services:
   htcollector:
-    image: varkenvarken/htcollector:latest
+    image: ghcr.io/varkenvarken/htcollector:latest
     ports:
       - 8083:1883
     env_file: .env
@@ -15,7 +15,7 @@ services:
     networks:
       - service_network
   dbserver:
-    image: varkenvarken/mariadb:latest
+    image: ghcr.io/varkenvarken/mariadb:latest
     ports:
       - 3366:3306
     env_file: .env
