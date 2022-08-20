@@ -17,7 +17,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220819113121
+#  version: 20220820143705
 
 import logging
 import re
@@ -225,7 +225,7 @@ class MeasurementDatabase:
             ]
         return rows
 
-    def retrieveDatetimeBefore(self, stationid, t):
+    def retrieveDatetimeBefore(self, stationid:str, t:datetime):
         """
         Returns the time of the last measurement preceding a given time.
 
@@ -237,16 +237,19 @@ class MeasurementDatabase:
             datetime or None: the time of the last measurement preceding a given time or None if the isn one
         """
 
+        t = t.astimezone(tz=tz.UTC)
+
         logging.debug("retrieveDatetimeBefore", stationid, t)
 
         cursor = self.connection.cursor()
         cursor.execute(
-            """SELECT Timestamp as 'Timestamp [timestamp]'
+            """SELECT Timestamp
                FROM Measurements
-               WHERE Stationid = ? AND Timestamp < ? ORDER BY timestamp DESC LIMIT 1;""",
+               WHERE Stationid = ? AND Timestamp < ? ORDER BY Timestamp DESC LIMIT 1;""",
             (stationid, t),
         )
         rows = cursor.fetchall()
+        print(t, rows, flush=True)
         # mariadb / mysql timestamps are in UTC but returned as 'naive' datetime objects
         return rows[0][0].replace(tzinfo=tz.UTC) if len(rows) else None
 
