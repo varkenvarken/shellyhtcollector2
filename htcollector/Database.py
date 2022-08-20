@@ -17,7 +17,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220820143705
+#  version: 20220820150827
 
 import logging
 import re
@@ -268,13 +268,18 @@ class MeasurementDatabase:
             name (str)): the name to associate with a stationid (ignored if stationid is '*')
 
         Returns:
-            list: either an empty list when inserting or replacing or a list of tuples(stationid, name)
+            dict: a dict(stationid:name)
         """
         if stationid == "*":
+            stationids = self.uniqueStations()
             conn = self.connection
             cursor = conn.cursor()
             cursor.execute("SELECT * FROM StationidToName")
-            return [(row[0], row[1]) for row in cursor.fetchall()]
+            stationmap =  {row[0]:row[1] for row in cursor.fetchall()}
+            for s in stationids:
+                if s not in stationmap:
+                    stationmap[s]="Unknown"
+            return stationmap
         else:
             conn = self.connection
             cursor = conn.cursor()
@@ -283,4 +288,4 @@ class MeasurementDatabase:
                 (stationid, name),
             )
             conn.commit()
-            return []
+            return self.names("*")

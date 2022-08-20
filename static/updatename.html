@@ -1,0 +1,29 @@
+<html>
+
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"
+        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <form action="/name" method="get">
+        <label for="id">Station id</label><input type="text" name="id" id="id">
+        <label for="name">Name</label><input type="text" name="name" id="name">
+        <button type="submit">Update</button>
+    </form>
+</body>
+<script>
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    stationid = document.getElementById("id");
+    stationid.value = urlParams.get("id");
+    stationname = document.getElementById("name");
+    stationname.value = urlParams.get("name");
+
+    // a focus handler that selects all text
+    $("input:text").focus(function () { $(this).select(); });
+    // set focus to name
+    $("#name").focus();
+</script>
+
+</html>

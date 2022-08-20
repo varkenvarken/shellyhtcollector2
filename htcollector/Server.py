@@ -17,7 +17,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220819120703
+#  version: 20220820184730
 
 from json import dumps
 import mimetypes
@@ -28,6 +28,7 @@ from datetime import datetime, timedelta
 from dateutil import tz
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from urllib.parse import urlparse,quote
 import logging
 
 from .Database import Measurement
@@ -70,9 +71,16 @@ class InterceptorHandlerFactory:
                 re.IGNORECASE,
             )
             staticpattern = re.compile(
-                r"^/static/(?P<resource>.+)$",
+                r"^(/static/(?P<resource>.*))|/$",
                 re.IGNORECASE,
             )
+            faviconpattern = re.compile(r"^/favicon.ico$")
+
+            @staticmethod
+            def checkPath(path:Path):
+                for p in path.parts:
+                    if p in {".", ".."}:
+                        raise ValueError("relative paths are forbidden")
 
             @staticmethod
             def getTimeseries(db, stationid):
@@ -86,6 +94,20 @@ class InterceptorHandlerFactory:
             def do_GET(self):
                 logging.info(self.path)
                 try:
+                    if re.match(self.faviconpattern, self.path):
+                        filepath = Path(static_directory) / "favicon.ico"
+                        mime_type = mimetypes.guess_type(filepath)[0]
+                        try:
+                            with open(filepath, "rb") as f:
+                                b = f.read()
+                                self.send_response(HTTPStatus.OK)
+                                self.send_header("Content-type", mime_type)
+                                self.send_header("Content-Length", str(len(b)))
+                                self.end_headers()
+                                self.wfile.write(b)
+                                return
+                        except FileNotFoundError:
+                            self.send_response(HTTPStatus.NOT_FOUND)
                     if m := re.match(self.querypattern, self.path):
                         measurement = Measurement(
                             m.group("stationid"),
@@ -223,10 +245,12 @@ class InterceptorHandlerFactory:
                         if not self.path.startswith("/names"):
                             stationid = m.group("stationid")
                             name = m.group("name")
-                            result = db.names(stationid, name)
-                        names = db.names("*")
+                            names = db.names(stationid, name)
+                        else:
+                            names = db.names("*")
+                        # TODO make sure url is urlencoded
                         names = "\n".join(
-                            f"<tr><td>{n[0]}</td><td>{n[1]}</td></tr>" for n in names
+                            f'<tr><td>{s}</td><td>{n}</td><td><a href="/static/updatename.html?id={s}&name={n}">Change</a></td></tr>' for s,n in names.items()
                         )
                         self.send_response(HTTPStatus.OK)
                         html = f"""<html><body>
@@ -239,7 +263,11 @@ class InterceptorHandlerFactory:
                         self.wfile.write(bytes(html, "UTF-8"))
                         return
                     elif m := re.match(self.staticpattern, self.path):
-                        filepath = Path(static_directory) / m.group("resource")
+                        path = urlparse(m.group("resource")).path
+                        filepath = Path(static_directory) / path
+                        InterceptorHandler.checkPath(filepath)
+                        if filepath.is_dir():
+                            filepath /= "index.html"
                         mime_type = mimetypes.guess_type(filepath)[0]
                         try:
                             with open(filepath, "rb") as f:
