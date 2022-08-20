@@ -225,7 +225,7 @@ class MeasurementDatabase:
             ]
         return rows
 
-    def retrieveDatetimeBefore(self, stationid:str, t:datetime):
+    def retrieveDatetimeBefore(self, stationid: str, t: datetime):
         """
         Returns the time of the last measurement preceding a given time.
 
