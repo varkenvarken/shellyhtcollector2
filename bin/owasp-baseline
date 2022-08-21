@@ -1,0 +1,2 @@
+#!/bin/bash
+docker run --network docker_service_network -t owasp/zap2docker-stable zap-baseline.py -t http://htcollector:1883

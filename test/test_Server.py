@@ -52,12 +52,12 @@ def finish(self):
 
 
 def date_time_string(self, timestamp=None):
-    """ Mocked date time string """
+    """Mocked date time string"""
     return "DATETIME"
 
 
 def version_string(self):
-    """ mock the server id """
+    """mock the server id"""
     return "BaseHTTP/x.x Python/x.x.x"
 
 
@@ -86,7 +86,7 @@ class TestInterceptor:
                         print(captured.out)
                         assert (
                             ihinstance.wfile.getvalue()
-                            == b"HTTP/1.0 200 OK\r\nServer: BaseHTTP/x.x Python/x.x.x\r\nDate: DATETIME\r\n\r\n"
+                            == b"HTTP/1.0 200 OK\r\nDate: DATETIME\r\n\r\n"
                         )
                         database.names(
                             stationid, "testroom1"
@@ -121,7 +121,7 @@ class TestInterceptor:
                         print(response)
                         assert (
                             response
-                            == b"HTTP/1.0 403 Forbidden\r\nServer: BaseHTTP/x.x Python/x.x.x\r\nDate: DATETIME\r\n\r\n"
+                            == b"HTTP/1.0 403 Forbidden\r\nDate: DATETIME\r\n\r\n"
                         )
                         database.names(
                             stationid, "testroom1"
@@ -158,7 +158,7 @@ class TestInterceptor:
                         print(response)
                         assert (
                             response
-                            == b"HTTP/1.0 500 Internal Server Error\r\nServer: BaseHTTP/x.x Python/x.x.x\r\nDate: DATETIME\r\n\r\n"
+                            == b"HTTP/1.0 500 Internal Server Error\r\nDate: DATETIME\r\n\r\n"
                         )
                         database.names(
                             stationid, "testroom1"

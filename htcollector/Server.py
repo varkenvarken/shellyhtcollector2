@@ -17,7 +17,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220820190054
+#  version: 20220821135908
 
 from json import dumps
 import mimetypes
@@ -76,6 +76,19 @@ class InterceptorHandlerFactory:
             )
             faviconpattern = re.compile(r"^/favicon.ico$")
 
+            def send_response(self, code, message=None):
+                """Add the response header to the headers buffer and log the
+                response code.
+                Also send two standard headers with the server software
+                version and the current date.
+
+                Overridden to leave out Server header (leaks information)
+                """
+                self.log_request(code)
+                self.send_response_only(code, message)
+                # self.send_header('Server', self.version_string())
+                self.send_header("Date", self.date_time_string())
+
             @staticmethod
             def checkPath(path: Path):
                 for p in path.parts:
@@ -125,6 +138,10 @@ class InterceptorHandlerFactory:
                         self.send_response(HTTPStatus.OK)
                         self.send_header("Content-type", "image/png")
                         self.send_header("Content-Length", str(len(png)))
+                        self.send_header(
+                            "Content-Security-Policy",
+                            "script-src 'self' https://cdn.jsdelivr.net/npm/; object-src 'none'",
+                        )
                         self.end_headers()
                         self.wfile.write(png)
                         f.close()
@@ -162,6 +179,10 @@ class InterceptorHandlerFactory:
                         self.send_response(HTTPStatus.OK)
                         self.send_header("Content-type", "text/html")
                         self.send_header("Content-Length", str(len(html)))
+                        self.send_header(
+                            "Content-Security-Policy",
+                            "script-src 'self' https://cdn.jsdelivr.net/npm/; object-src 'none'",
+                        )
                         self.end_headers()
                         self.wfile.write(html)
                         return
@@ -208,6 +229,10 @@ class InterceptorHandlerFactory:
                         self.send_response(HTTPStatus.OK)
                         self.send_header("Content-type", "text/html")
                         self.send_header("Content-Length", str(len(html)))
+                        self.send_header(
+                            "Content-Security-Policy",
+                            "script-src 'self' https://cdn.jsdelivr.net/npm/; object-src 'none'",
+                        )
                         self.end_headers()
                         self.wfile.write(html)
                         return
@@ -238,6 +263,10 @@ class InterceptorHandlerFactory:
                         self.send_response(HTTPStatus.OK)
                         self.send_header("Content-type", "application/json")
                         self.send_header("Content-Length", str(len(json)))
+                        self.send_header(
+                            "Content-Security-Policy",
+                            "script-src 'self' https://cdn.jsdelivr.net/npm/; object-src 'none'",
+                        )
                         self.end_headers()
                         self.wfile.write(json)
                         return
@@ -265,15 +294,22 @@ class InterceptorHandlerFactory:
                         """
                         self.send_header("Content-type", "text/html")
                         self.send_header("Content-Length", str(len(html)))
+                        self.send_header(
+                            "Content-Security-Policy",
+                            "script-src 'self' https://cdn.jsdelivr.net/npm/; object-src 'none'",
+                        )
                         self.end_headers()
                         self.wfile.write(bytes(html, "UTF-8"))
                         return
                     elif m := re.match(self.staticpattern, self.path):
                         path = urlparse(m.group("resource")).path
-                        filepath = Path(static_directory) / path
+                        filepath = Path(static_directory) / (
+                            path.decode() if type(path) is bytes else path
+                        )  # TODO check encoding URLs are not UTF-8?
                         InterceptorHandler.checkPath(filepath)
                         if filepath.is_dir():
                             filepath /= "index.html"
+                        logging.info(filepath)
                         mime_type = mimetypes.guess_type(filepath)[0]
                         try:
                             with open(filepath, "rb") as f:
@@ -281,6 +317,10 @@ class InterceptorHandlerFactory:
                                 self.send_response(HTTPStatus.OK)
                                 self.send_header("Content-type", mime_type)
                                 self.send_header("Content-Length", str(len(b)))
+                                self.send_header(
+                                    "Content-Security-Policy",
+                                    "script-src 'self' https://cdn.jsdelivr.net/npm/; object-src 'none'",
+                                )
                                 self.end_headers()
                                 self.wfile.write(b)
                                 return

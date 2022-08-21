@@ -17,7 +17,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220820150827
+#  version: 20220821123458
 
 import logging
 import re
@@ -212,6 +212,7 @@ class MeasurementDatabase:
             )
             rows = cursor.fetchall()
             # mariadb / mysql timestamps are in UTC but returned as 'naive' datetime objects
+            logging.info(rows)
             rows = [
                 {
                     "time": row[0].replace(tzinfo=tz.UTC),

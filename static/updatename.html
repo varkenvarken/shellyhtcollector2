@@ -19,10 +19,7 @@
     stationid.value = urlParams.get("id");
     stationname = document.getElementById("name");
     stationname.value = urlParams.get("name");
-
-    // a focus handler that selects all text
     $("input:text").focus(function () { $(this).select(); });
-    // set focus to name
     $("#name").focus();
 </script>
 
