@@ -17,7 +17,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220821123458
+#  version: 20220821145131
 
 import logging
 import re
@@ -203,27 +203,27 @@ class MeasurementDatabase:
                 )
         else:
             # get the data
-            cursor = self.connection.cursor()
-            cursor.execute(
-                """SELECT Timestamp as 'Timestamp [timestamp]', Stationid, Temperature, Humidity
-            FROM Measurements
-            WHERE Stationid = ? ORDER BY timestamp DESC LIMIT 1;""",
-                (stationid,),
-            )
-            rows = cursor.fetchall()
-            # mariadb / mysql timestamps are in UTC but returned as 'naive' datetime objects
-            logging.info(rows)
-            rows = [
-                {
-                    "time": row[0].replace(tzinfo=tz.UTC),
-                    "deltat": datetime.now() - row[0],
-                    "stationid": row[1],
-                    "name": _names.get(row[1], "unknown"),
-                    "temperature": row[2],
-                    "humidity": row[3],
-                }
-                for row in rows
-            ]
+            with self.connection.cursor() as cursor:
+                cursor.execute(
+                    """SELECT Timestamp as 'Timestamp [timestamp]', Stationid, Temperature, Humidity
+                FROM Measurements
+                WHERE Stationid = ? ORDER BY timestamp DESC LIMIT 1;""",
+                    (stationid,),
+                )
+                rows = cursor.fetchall()
+                # mariadb / mysql timestamps are in UTC but returned as 'naive' datetime objects
+                logging.info(f"retrieveLastMeasurement {stationid}, {rows}")
+                rows = [
+                    {
+                        "time": row[0].replace(tzinfo=tz.UTC),
+                        "deltat": datetime.now() - row[0],
+                        "stationid": row[1],
+                        "name": _names.get(row[1], "unknown"),
+                        "temperature": row[2],
+                        "humidity": row[3],
+                    }
+                    for row in rows
+                ]
         return rows
 
     def retrieveDatetimeBefore(self, stationid: str, t: datetime):
@@ -246,7 +246,7 @@ class MeasurementDatabase:
         cursor.execute(
             """SELECT Timestamp
                FROM Measurements
-               WHERE Stationid = ? AND Timestamp < ? ORDER BY Timestamp DESC LIMIT 1;""",
+               WHERE Stationid = ? AND Timestamp < ? ORDER BY Timestamp DESC LIMIT 1""",
             (stationid, t),
         )
         rows = cursor.fetchall()
@@ -256,9 +256,9 @@ class MeasurementDatabase:
 
     def uniqueStations(self):
         conn = self.connection
-        cursor = conn.cursor()
-        cursor.execute("SELECT DISTINCT(Stationid) FROM Measurements")
-        return [row[0] for row in cursor.fetchall()]
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT DISTINCT(Stationid) FROM Measurements")
+            return [row[0] for row in cursor.fetchall()]
 
     def names(self, stationid, name=None):
         """
@@ -274,19 +274,21 @@ class MeasurementDatabase:
         if stationid == "*":
             stationids = self.uniqueStations()
             conn = self.connection
-            cursor = conn.cursor()
-            cursor.execute("SELECT * FROM StationidToName")
-            stationmap = {row[0]: row[1] for row in cursor.fetchall()}
-            for s in stationids:
-                if s not in stationmap:
-                    stationmap[s] = "Unknown"
-            return stationmap
+            with conn.cursor() as cursor:
+                cursor.execute("SELECT * FROM StationidToName")
+                rows = cursor.fetchall()
+                print("names>>>", rows)
+                stationmap = {row[0]: row[1] for row in rows}
+                for s in stationids:
+                    if s not in stationmap:
+                        stationmap[s] = "Unknown"
+                return stationmap
         else:
             conn = self.connection
-            cursor = conn.cursor()
-            cursor.execute(
-                "REPLACE StationidToName(Stationid, Name) VALUES(?,?)",
-                (stationid, name),
-            )
-            conn.commit()
-            return self.names("*")
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    "REPLACE StationidToName(Stationid, Name) VALUES(?,?)",
+                    (stationid, name),
+                )
+                conn.commit()
+                return self.names("*")

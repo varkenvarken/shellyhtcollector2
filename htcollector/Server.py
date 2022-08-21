@@ -17,7 +17,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220821135908
+#  version: 20220821141334
 
 from json import dumps
 import mimetypes
@@ -27,12 +27,11 @@ from io import BytesIO as IO
 from datetime import datetime, timedelta
 from dateutil import tz
 from http import HTTPStatus
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import urlparse, quote, unquote_plus
 import logging
 
 from .Database import Measurement
-from .Graph import graph
 from .Utils import DatetimeEncoder
 
 
@@ -47,10 +46,6 @@ class InterceptorHandlerFactory:
         class InterceptorHandler(BaseHTTPRequestHandler):
             querypattern = re.compile(
                 r"^/sensorlog\?hum=(?P<humidity>\d+(\.\d+)?)\&temp=(?P<temperature>\d+(\.\d+)?)\&id=(?P<stationid>[a-z01-9-]+)$",
-                re.IGNORECASE,
-            )
-            graphpattern = re.compile(
-                r"^/graph\?id=(?P<stationid>[a-z01-9-]+)$",
                 re.IGNORECASE,
             )
             htmlpattern = re.compile(
@@ -129,23 +124,6 @@ class InterceptorHandlerFactory:
                         )
                         db.storeMeasurement(measurement)
                         self.send_response(HTTPStatus.OK)
-                    elif m := re.match(self.graphpattern, self.path):
-                        now = datetime.now(tz=tz.tzlocal())
-                        yesterday = now - timedelta(1)
-                        f = IO(b"")
-                        graph(db, f, m.group("stationid"), yesterday, now)
-                        png = f.getvalue()
-                        self.send_response(HTTPStatus.OK)
-                        self.send_header("Content-type", "image/png")
-                        self.send_header("Content-Length", str(len(png)))
-                        self.send_header(
-                            "Content-Security-Policy",
-                            "script-src 'self' https://cdn.jsdelivr.net/npm/; object-src 'none'",
-                        )
-                        self.end_headers()
-                        self.wfile.write(png)
-                        f.close()
-                        return
                     elif m := re.match(self.htmlpattern, self.path):
                         ms = db.retrieveLastMeasurement(m.group("stationid"))
                         mdivs = "\n".join(
@@ -336,7 +314,7 @@ class InterceptorHandlerFactory:
         return InterceptorHandler
 
 
-class Interceptor(ThreadingHTTPServer):
+class Interceptor(HTTPServer):
     allow_reuse_address = True
 
     def __init__(self, server_address, db, static_directory):
