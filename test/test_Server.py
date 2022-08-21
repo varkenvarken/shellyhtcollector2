@@ -119,10 +119,7 @@ class TestInterceptor:
                         print(captured.out)
                         response = ihinstance.wfile.getvalue()
                         print(response)
-                        assert (
-                            response
-                            == b"HTTP/1.0 403 Forbidden\r\nDate: DATETIME\r\n\r\n"
-                        )
+                        assert response == b"HTTP/1.0 403 Forbidden\r\n\r\n"
                         database.names(
                             stationid, "testroom1"
                         )  # without a stationid mapping we never get anything back
@@ -156,10 +153,7 @@ class TestInterceptor:
                         print(captured.out)
                         response = ihinstance.wfile.getvalue()
                         print(response)
-                        assert (
-                            response
-                            == b"HTTP/1.0 500 Internal Server Error\r\nDate: DATETIME\r\n\r\n"
-                        )
+                        assert response == b"HTTP/1.0 500 Internal Server Error\r\n\r\n"
                         database.names(
                             stationid, "testroom1"
                         )  # without a stationid mapping we never get anything back

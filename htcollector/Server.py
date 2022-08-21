@@ -17,7 +17,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220821141334
+#  version: 20220821163151
 
 from json import dumps
 import mimetypes
@@ -74,8 +74,6 @@ class InterceptorHandlerFactory:
             def send_response(self, code, message=None):
                 """Add the response header to the headers buffer and log the
                 response code.
-                Also send two standard headers with the server software
-                version and the current date.
 
                 Overridden to leave out Server header (leaks information)
                 """
@@ -98,6 +96,13 @@ class InterceptorHandlerFactory:
                     stationid,
                     mtime if mtime is not None else mark,
                 )
+
+            def common_headers(self):
+                self.send_header(
+                    "Content-Security-Policy",
+                    "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net/npm/; object-src 'none'; base-uri 'self'; frame-ancestors 'self';",
+                )
+                self.send_header("X-Content-Type-Options", "nosniff")
 
             def do_GET(self):
                 logging.info(self.path)
@@ -157,10 +162,7 @@ class InterceptorHandlerFactory:
                         self.send_response(HTTPStatus.OK)
                         self.send_header("Content-type", "text/html")
                         self.send_header("Content-Length", str(len(html)))
-                        self.send_header(
-                            "Content-Security-Policy",
-                            "script-src 'self' https://cdn.jsdelivr.net/npm/; object-src 'none'",
-                        )
+                        self.common_headers()
                         self.end_headers()
                         self.wfile.write(html)
                         return
@@ -207,10 +209,7 @@ class InterceptorHandlerFactory:
                         self.send_response(HTTPStatus.OK)
                         self.send_header("Content-type", "text/html")
                         self.send_header("Content-Length", str(len(html)))
-                        self.send_header(
-                            "Content-Security-Policy",
-                            "script-src 'self' https://cdn.jsdelivr.net/npm/; object-src 'none'",
-                        )
+                        self.common_headers()
                         self.end_headers()
                         self.wfile.write(html)
                         return
@@ -241,21 +240,12 @@ class InterceptorHandlerFactory:
                         self.send_response(HTTPStatus.OK)
                         self.send_header("Content-type", "application/json")
                         self.send_header("Content-Length", str(len(json)))
-                        self.send_header(
-                            "Content-Security-Policy",
-                            "script-src 'self' https://cdn.jsdelivr.net/npm/; object-src 'none'",
-                        )
+                        self.common_headers()
                         self.end_headers()
                         self.wfile.write(json)
                         return
                     elif m := re.match(self.namespattern, unquote_plus(self.path)):
                         if not self.path.startswith("/names"):
-                            logging.info(
-                                ">>>>>>"
-                                + m.group("name")
-                                + self.path
-                                + urlparse(self.path).query,
-                            )
                             stationid = m.group("stationid")
                             name = m.group("name")
                             names = db.names(stationid, name)
@@ -272,10 +262,7 @@ class InterceptorHandlerFactory:
                         """
                         self.send_header("Content-type", "text/html")
                         self.send_header("Content-Length", str(len(html)))
-                        self.send_header(
-                            "Content-Security-Policy",
-                            "script-src 'self' https://cdn.jsdelivr.net/npm/; object-src 'none'",
-                        )
+                        self.common_headers()
                         self.end_headers()
                         self.wfile.write(bytes(html, "UTF-8"))
                         return
@@ -287,7 +274,6 @@ class InterceptorHandlerFactory:
                         InterceptorHandler.checkPath(filepath)
                         if filepath.is_dir():
                             filepath /= "index.html"
-                        logging.info(filepath)
                         mime_type = mimetypes.guess_type(filepath)[0]
                         try:
                             with open(filepath, "rb") as f:
@@ -295,20 +281,17 @@ class InterceptorHandlerFactory:
                                 self.send_response(HTTPStatus.OK)
                                 self.send_header("Content-type", mime_type)
                                 self.send_header("Content-Length", str(len(b)))
-                                self.send_header(
-                                    "Content-Security-Policy",
-                                    "script-src 'self' https://cdn.jsdelivr.net/npm/; object-src 'none'",
-                                )
+                                self.common_headers()
                                 self.end_headers()
                                 self.wfile.write(b)
                                 return
                         except FileNotFoundError:
                             self.send_response(HTTPStatus.NOT_FOUND)
                     else:
-                        self.send_response(HTTPStatus.FORBIDDEN)
+                        self.send_response_only(HTTPStatus.FORBIDDEN)
                 except Exception as e:
                     logging.exception(e)
-                    self.send_response(HTTPStatus.INTERNAL_SERVER_ERROR)
+                    self.send_response_only(HTTPStatus.INTERNAL_SERVER_ERROR)
                 self.end_headers()
 
         return InterceptorHandler
