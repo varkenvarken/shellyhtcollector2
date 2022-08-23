@@ -45,6 +45,22 @@ class MockRequest(object):
             raise ValueError("Unknown file type to make", args, kwargs)
 
 
+class MockPOSTRequest(object):
+    _sock = MockSocket()
+
+    def __init__(self, path, body):
+        self._path = path
+        self._body = body
+
+    def makefile(self, *args, **kwargs):
+        if args[0] == "rb":
+            return IO(b"POST %s HTTP/1.0\r\n\r\n%s" % (self._path, self._body))
+        elif args[0] == "wb":
+            return IO(b"")
+        else:
+            raise ValueError("Unknown file type to make", args, kwargs)
+
+
 def finish(self):
     # Do not close self.wfile, so we can read its value
     self.wfile.flush()
@@ -375,10 +391,11 @@ class TestInterceptor:
                 ):
                     with mock.patch.object(interceptorhandler, "wbufsize", lambda: 1):
                         start = datetime.now()
-                        request = MockRequest(
-                            b"/name?id=%s&name=%s"
-                            % (bytes(stationid, "UTF-8"), bytes(name, "UTF-8"))
+                        request = MockPOSTRequest(
+                            b"/name",
+                            bytes(f"stationid={stationid}\r\nname={name}\r\n", "UTF-8"),
                         )
+
                         ihinstance = interceptorhandler(
                             request, ("127.0.0.1", 12345), "testserver.example.org"
                         )

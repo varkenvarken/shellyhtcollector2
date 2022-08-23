@@ -17,7 +17,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220821163151
+#  version: 20220823171759
 
 from json import dumps
 import mimetypes
@@ -28,7 +28,8 @@ from datetime import datetime, timedelta
 from dateutil import tz
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from urllib.parse import urlparse, quote, unquote_plus
+from urllib.parse import urlparse, quote, unquote_plus, parse_qs
+import cgi
 import logging
 
 from .Database import Measurement
@@ -62,7 +63,11 @@ class InterceptorHandlerFactory:
                 re.IGNORECASE,
             )
             namespattern = re.compile(
-                r"^(/name\?id=(?P<stationid>[a-z01-9-]+)\&name=(?P<name>([a-z01-9-]|\s)+))|(/names)$",
+                r"^/names$",
+                re.IGNORECASE,
+            )
+            updatenamepattern = re.compile(
+                r"^/name$",
                 re.IGNORECASE,
             )
             staticpattern = re.compile(
@@ -98,9 +103,10 @@ class InterceptorHandlerFactory:
                 )
 
             def common_headers(self):
+                "the checksum is for the inline script in the updatename.html"
                 self.send_header(
                     "Content-Security-Policy",
-                    "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net/npm/; object-src 'none'; base-uri 'self'; frame-ancestors 'self';",
+                    "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net/npm/ 'sha256-m/VYsp+J+CFMn+MvBg+XMDwm67RMydRIm5ltf4j4nRk='; object-src 'none'; base-uri 'self'; frame-ancestors 'self';",
                 )
                 self.send_header("X-Content-Type-Options", "nosniff")
 
@@ -244,13 +250,8 @@ class InterceptorHandlerFactory:
                         self.end_headers()
                         self.wfile.write(json)
                         return
-                    elif m := re.match(self.namespattern, unquote_plus(self.path)):
-                        if not self.path.startswith("/names"):
-                            stationid = m.group("stationid")
-                            name = m.group("name")
-                            names = db.names(stationid, name)
-                        else:
-                            names = db.names("*")
+                    elif m := re.match(self.namespattern, self.path):
+                        names = db.names("*")
                         names = "\n".join(
                             f'<tr><td>{s}</td><td>{n}</td><td><a href="/static/updatename.html?id={quote(s)}&name={quote(n)}">Change</a></td></tr>'
                             for s, n in names.items()
@@ -293,6 +294,42 @@ class InterceptorHandlerFactory:
                     logging.exception(e)
                     self.send_response_only(HTTPStatus.INTERNAL_SERVER_ERROR)
                 self.end_headers()
+
+            def do_POST(self):
+                logging.info(self.path)
+                if m := re.match(self.updatenamepattern, self.path):
+                    logging.info(m)
+                    file_length = int(self.headers["Content-Length"])
+                    try:
+                        keyvalues = parse_qs(
+                            self.rfile.read(file_length), max_num_fields=2
+                        )  # encoding is assumed to be UTF-8
+                    except ValueError:
+                        self.send_response_only(HTTPStatus.BAD_REQUEST)
+                    logging.info(keyvalues)
+                    stationid = keyvalues.get(b"id", [b""])[0].decode("UTF-8")
+                    name = keyvalues.get(b"name", [b""])[0].decode("UTF-8")
+                    logging.info(f"{stationid} {name}")
+                    if stationid == "" or name == "":
+                        self.send_response_only(HTTPStatus.BAD_REQUEST)
+
+                    names = db.names(stationid, name)
+                    # TODO refactor duplicate code
+                    names = "\n".join(
+                        f'<tr><td>{s}</td><td>{n}</td><td><a href="/static/updatename.html?id={quote(s)}&name={quote(n)}">Change</a></td></tr>'
+                        for s, n in names.items()
+                    )
+                    self.send_response(HTTPStatus.OK)
+                    html = f"""<html><body>
+                    <table>{names}</table>
+                    </body></html>
+                    """
+                    self.send_header("Content-type", "text/html")
+                    self.send_header("Content-Length", str(len(html)))
+                    self.common_headers()
+                    self.end_headers()
+                    self.wfile.write(bytes(html, "UTF-8"))
+                    return
 
         return InterceptorHandler
 
