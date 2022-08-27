@@ -393,7 +393,7 @@ class TestInterceptor:
                         start = datetime.now()
                         request = MockPOSTRequest(
                             b"/name",
-                            bytes(f"stationid={stationid}\r\nname={name}\r\n", "UTF-8"),
+                            bytes(f"id={stationid}&name={name}\r\n", "UTF-8"),
                         )
 
                         ihinstance = interceptorhandler(
@@ -401,6 +401,7 @@ class TestInterceptor:
                         )
                         captured = capsys.readouterr()
                         print(captured.out)
+                        print(captured.err)
                         assert ihinstance.wfile.getvalue()[:15] == b"HTTP/1.0 200 OK"
 
         interceptorhandler = InterceptorHandlerFactory.getHandler(database, "./static")

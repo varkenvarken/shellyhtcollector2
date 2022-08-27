@@ -115,7 +115,7 @@ $.each(station_data, function (index, element) {
     temp = `<div class="temp">${Number(element.temperature).toFixed(1)}<span class="degrees">°C</span></div>`;
     hum = `<div class="hum">${element.humidity}<span class=percent>%</span></div>`;
     canvasid = "canvas-" + element.stationid;
-    spark = `<div><canvas height="60" width="180" id="${canvasid}"></canvas></div>`;
+    spark = `<div><canvas height="120" width="180" id="${canvasid}"></canvas></div>`;
     measurement = `<div class="measurement" id="${element.stationid}">${station}${time}${temp}${hum}${spark}</div>`;
     $("#measurements").append(measurement);
     sparkline($(`#${canvasid}`)[0].getContext('2d'), element.stationid);

@@ -17,7 +17,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220823171759
+#  version: 20220827124422
 
 from json import dumps
 import mimetypes
@@ -299,7 +299,7 @@ class InterceptorHandlerFactory:
                 logging.info(self.path)
                 if m := re.match(self.updatenamepattern, self.path):
                     logging.info(m)
-                    file_length = int(self.headers["Content-Length"])
+                    file_length = int(self.headers.get("Content-Length", -1))
                     try:
                         keyvalues = parse_qs(
                             self.rfile.read(file_length), max_num_fields=2
