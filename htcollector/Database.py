@@ -17,7 +17,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220828135031
+#  version: 20220828175157
 
 import logging
 import re
@@ -206,7 +206,9 @@ class MeasurementDatabase:
         Returns:
             list: a list of dict objects, one for each station
         """
-        logging.debug("retrieveLastMeasurement", stationid, _names, _unique_stations)
+        logging.debug(
+            f"retrieveLastMeasurement {stationid} names={_names} unique_stations{_unique_stations}"
+        )
         if _names is None:
             _names = {nm[0]: nm[1] for nm in self.names("*")}
 
@@ -262,7 +264,7 @@ class MeasurementDatabase:
 
         t = t.astimezone(tz=tz.UTC)
 
-        logging.debug("retrieveDatetimeBefore", stationid, t)
+        logging.debug(f"retrieveDatetimeBefore {stationid} {t}")
 
         with self.pool.get_connection() as connection:
             connection.auto_reconnect = True
