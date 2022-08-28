@@ -17,7 +17,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220828175157
+#  version: 20220828180356
 
 import logging
 import re
@@ -210,7 +210,7 @@ class MeasurementDatabase:
             f"retrieveLastMeasurement {stationid} names={_names} unique_stations{_unique_stations}"
         )
         if _names is None:
-            _names = {nm[0]: nm[1] for nm in self.names("*")}
+            _names = self.names("*")
 
         if _unique_stations is None:
             _unique_stations = self.uniqueStations()
