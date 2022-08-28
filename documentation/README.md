@@ -5,14 +5,14 @@
 ![Black](https://github.com/varkenvarken/shellyhtcollector2/actions/workflows/black.yml/badge.svg)
 [![Versions](https://img.shields.io/pypi/v/htcollector)](https://pypi.org/project/htcollector/)
 ![Python versions](https://img.shields.io/pypi/pyversions/htcollector)
-# Shellyhtcollector2
+# htcollector
 
 Gather incoming temperature and humidity updates from a small swarm of Shellyht devices.
 
 ## Intro
 
 Shelly HT devices can be configured to send their measurements to a configurable server.
-The server is called using a simple HTTP GET request that by default uses an URL like
+The server is called using a simple HTTP GET request like
 
 `http://mymachine:8083/sensorlog?hum=24&temp=42.38&id=shellyht-1234FA`
 
@@ -22,14 +22,15 @@ where the part `http://mymachine:8083/sensorlog` is something you configure in t
 It also provides means to associate meaningful labels with the station-ids and generate html,
 json or a png image with the latest measurements.
 
-# Installation
+# Installation and use
 
 'htcollector` is a Python package that can be used to implement your own server
 that intercepts messages from Shelly HT devices or you can use the default server implementation
 that is part of the package.
 
-If you are already working with Docker things are even simpler as we provide the two necessary
-as part of this project.
+If you are already working with Docker things are even simpler as the two necessary images are provided
+as part of this project and available on
+[the GitHub Container Registry](https://github.com/varkenvarken?tab=packages&repo_name=shellyhtcollector2)
 
 ## Easy installation using Docker
 
@@ -65,13 +66,13 @@ An even nicer looking example is available on
 
 ![Screenshot ](https://raw.githubusercontent.com/varkenvarken/shellyhtcollector2/master/documentation/assets/screenshots/screenshot-all.png)
 
-These pages refer to two additional urls: `static/css/stylesheet.css` and `static/js/layout.js`)
+These pages refer to two additional urls: `static/css/stylesheet.css` and `static/js/layout.js`, which are served by the same server.
 
-You can associate a meaningful label with any station, for example:
+You can also associate a meaningful label with any station, simply go to:
 
-`http://mymachine:8083/name?id=shellyht-1234FA&name=Kitchen`
+`http://mymachine:8083/names`
 
-There is no form provided (yet) to make this simpler, you'll have to tweak the url by hand.
+and click on the device you want to change the label of.
 
 !!! note
 
