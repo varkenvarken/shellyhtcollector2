@@ -17,7 +17,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220828130742
+#  version: 20220828170112
 
 from json import dumps
 import mimetypes
@@ -27,7 +27,7 @@ from io import BytesIO as IO
 from datetime import datetime, timedelta
 from dateutil import tz
 from http import HTTPStatus
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, HTTPServer, ThreadingHTTPServer
 from urllib.parse import urlparse, quote, unquote_plus, parse_qs
 import cgi
 import logging
@@ -337,7 +337,7 @@ class InterceptorHandlerFactory:
         return InterceptorHandler
 
 
-class Interceptor(HTTPServer):
+class Interceptor(ThreadingHTTPServer):
     allow_reuse_address = True
 
     def __init__(self, server_address, db, static_directory):
