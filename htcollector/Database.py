@@ -17,7 +17,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220821145131
+#  version: 20220828123631
 
 import logging
 import re
@@ -76,27 +76,37 @@ class MeasurementDatabase:
     """
 
     def __init__(self, database, host, port, user, password):
-        self.connection = mariadb.connect(
-            user=user, password=password, host=host, database=database
+        self.pool = mariadb.ConnectionPool(
+            pool_name="connection_pool_1",
+            user=user,
+            password=password,
+            host=host,
+            database=database,
         )
-        self.connection.auto_reconnect = True
 
-        # the timestamp is configured for millisecond resolution
-        cursor = self.connection.cursor()
-        cursor.execute(
-            """CREATE TABLE IF NOT EXISTS Measurements(
-            Timestamp DATETIME(3) DEFAULT CURRENT_TIMESTAMP,
-            Stationid VARCHAR(100),
-            Temperature REAL,
-            Humidity REAL);"""
-        )
-        cursor.execute("""CREATE INDEX IF NOT EXISTS ts ON Measurements(Timestamp);""")
-        cursor.execute("""CREATE INDEX IF NOT EXISTS si ON Measurements(Stationid);""")
-        cursor.execute(
-            """CREATE TABLE IF NOT EXISTS StationidToName(
-            Stationid  VARCHAR(100) NOT NULL PRIMARY KEY,
-            Name TEXT NOT NULL);"""
-        )
+        with self.pool.get_connection() as connection:
+            connection.auto_reconnect = True
+
+            # the timestamp is configured for millisecond resolution
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """CREATE TABLE IF NOT EXISTS Measurements(
+                    Timestamp DATETIME(3) DEFAULT CURRENT_TIMESTAMP,
+                    Stationid VARCHAR(100),
+                    Temperature REAL,
+                    Humidity REAL);"""
+                )
+                cursor.execute(
+                    """CREATE INDEX IF NOT EXISTS ts ON Measurements(Timestamp);"""
+                )
+                cursor.execute(
+                    """CREATE INDEX IF NOT EXISTS si ON Measurements(Stationid);"""
+                )
+                cursor.execute(
+                    """CREATE TABLE IF NOT EXISTS StationidToName(
+                    Stationid  VARCHAR(100) NOT NULL PRIMARY KEY,
+                    Name TEXT NOT NULL);"""
+                )
 
     def storeMeasurement(self, measurement):
         """
@@ -107,16 +117,22 @@ class MeasurementDatabase:
 
         Measurements do not contain timestamps, the are added automatically.
         """
-        cursor = self.connection.cursor()
-        cursor.execute(
-            """INSERT INTO Measurements(Stationid, Temperature, Humidity)
-                                    VALUES (?,?,?)""",
-            (measurement.stationid, measurement.temperature, measurement.humidity),
-        )
-        self.connection.commit()
-        n = cursor.rowcount
-        cursor.close()
-        return n
+        with self.pool.get_connection() as connection:
+            connection.auto_reconnect = True
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """INSERT INTO Measurements(Stationid, Temperature, Humidity)
+                           VALUES (?,?,?)""",
+                    (
+                        measurement.stationid,
+                        measurement.temperature,
+                        measurement.humidity,
+                    ),
+                )
+                connection.commit()
+                n = cursor.rowcount
+                cursor.close()
+                return n
 
     def retrieveMeasurements(
         self, stationid, starttime: datetime, endtime: datetime = None
@@ -143,23 +159,27 @@ class MeasurementDatabase:
             microsecond=(starttime.microsecond // 1000) * 1000
         )  # round down to millis
         if stationid == "*":
-            cursor = self.connection.cursor()
-            cursor.execute(
-                f"""SELECT Timestamp, Stationid, Temperature, Humidity
-                        FROM Measurements
-                        WHERE Timestamp >= ? AND Timestamp <= ?""",
-                (starttime, endtime),
-            )
-            rows = cursor.fetchall()
+            with self.pool.get_connection() as connection:
+                connection.auto_reconnect = True
+                with connection.cursor() as cursor:
+                    cursor.execute(
+                        f"""SELECT Timestamp, Stationid, Temperature, Humidity
+                                FROM Measurements
+                                WHERE Timestamp >= ? AND Timestamp <= ?""",
+                        (starttime, endtime),
+                    )
+                    rows = cursor.fetchall()
         else:
-            cursor = self.connection.cursor()
-            cursor.execute(
-                f"""SELECT Timestamp, Stationid, Temperature, Humidity
-                        FROM Measurements
-                        WHERE Stationid = ? AND Timestamp >= ? AND Timestamp <= ?""",
-                (stationid, starttime, endtime),
-            )
-            rows = cursor.fetchall()
+            with self.pool.get_connection() as connection:
+                connection.auto_reconnect = True
+                with connection.cursor() as cursor:
+                    cursor.execute(
+                        f"""SELECT Timestamp, Stationid, Temperature, Humidity
+                                FROM Measurements
+                                WHERE Stationid = ? AND Timestamp >= ? AND Timestamp <= ?""",
+                        (stationid, starttime, endtime),
+                    )
+                    rows = cursor.fetchall()
 
         # mariadb / mysql timestamps are in UTC but returned as 'naive' datetime objects
         rows = [
@@ -203,27 +223,29 @@ class MeasurementDatabase:
                 )
         else:
             # get the data
-            with self.connection.cursor() as cursor:
-                cursor.execute(
-                    """SELECT Timestamp as 'Timestamp [timestamp]', Stationid, Temperature, Humidity
-                FROM Measurements
-                WHERE Stationid = ? ORDER BY timestamp DESC LIMIT 1;""",
-                    (stationid,),
-                )
-                rows = cursor.fetchall()
-                # mariadb / mysql timestamps are in UTC but returned as 'naive' datetime objects
-                logging.info(f"retrieveLastMeasurement {stationid}, {rows}")
-                rows = [
-                    {
-                        "time": row[0].replace(tzinfo=tz.UTC),
-                        "deltat": datetime.now() - row[0],
-                        "stationid": row[1],
-                        "name": _names.get(row[1], "unknown"),
-                        "temperature": row[2],
-                        "humidity": row[3],
-                    }
-                    for row in rows
-                ]
+            with self.pool.get_connection() as connection:
+                connection.auto_reconnect = True
+                with connection.cursor() as cursor:
+                    cursor.execute(
+                        """SELECT Timestamp as 'Timestamp [timestamp]', Stationid, Temperature, Humidity
+                            FROM Measurements
+                            WHERE Stationid = ? ORDER BY timestamp DESC LIMIT 1;""",
+                        (stationid,),
+                    )
+                    rows = cursor.fetchall()
+                    # mariadb / mysql timestamps are in UTC but returned as 'naive' datetime objects
+                    logging.info(f"retrieveLastMeasurement {stationid}, {rows}")
+                    rows = [
+                        {
+                            "time": row[0].replace(tzinfo=tz.UTC),
+                            "deltat": datetime.now() - row[0],
+                            "stationid": row[1],
+                            "name": _names.get(row[1], "unknown"),
+                            "temperature": row[2],
+                            "humidity": row[3],
+                        }
+                        for row in rows
+                    ]
         return rows
 
     def retrieveDatetimeBefore(self, stationid: str, t: datetime):
@@ -242,23 +264,26 @@ class MeasurementDatabase:
 
         logging.debug("retrieveDatetimeBefore", stationid, t)
 
-        cursor = self.connection.cursor()
-        cursor.execute(
-            """SELECT Timestamp
-               FROM Measurements
-               WHERE Stationid = ? AND Timestamp < ? ORDER BY Timestamp DESC LIMIT 1""",
-            (stationid, t),
-        )
-        rows = cursor.fetchall()
-        print(t, rows, flush=True)
-        # mariadb / mysql timestamps are in UTC but returned as 'naive' datetime objects
-        return rows[0][0].replace(tzinfo=tz.UTC) if len(rows) else None
+        with self.pool.get_connection() as connection:
+            connection.auto_reconnect = True
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """SELECT Timestamp
+                    FROM Measurements
+                    WHERE Stationid = ? AND Timestamp < ? ORDER BY Timestamp DESC LIMIT 1""",
+                    (stationid, t),
+                )
+                rows = cursor.fetchall()
+                print(t, rows, flush=True)
+                # mariadb / mysql timestamps are in UTC but returned as 'naive' datetime objects
+                return rows[0][0].replace(tzinfo=tz.UTC) if len(rows) else None
 
     def uniqueStations(self):
-        conn = self.connection
-        with conn.cursor() as cursor:
-            cursor.execute("SELECT DISTINCT(Stationid) FROM Measurements")
-            return [row[0] for row in cursor.fetchall()]
+        with self.pool.get_connection() as connection:
+            connection.auto_reconnect = True
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT DISTINCT(Stationid) FROM Measurements")
+                return [row[0] for row in cursor.fetchall()]
 
     def names(self, stationid, name=None):
         """
@@ -273,22 +298,24 @@ class MeasurementDatabase:
         """
         if stationid == "*":
             stationids = self.uniqueStations()
-            conn = self.connection
-            with conn.cursor() as cursor:
-                cursor.execute("SELECT * FROM StationidToName")
-                rows = cursor.fetchall()
-                print("names>>>", rows)
-                stationmap = {row[0]: row[1] for row in rows}
-                for s in stationids:
-                    if s not in stationmap:
-                        stationmap[s] = "Unknown"
-                return stationmap
+            with self.pool.get_connection() as connection:
+                connection.auto_reconnect = True
+                with connection.cursor() as cursor:
+                    cursor.execute("SELECT * FROM StationidToName")
+                    rows = cursor.fetchall()
+                    print("names>>>", rows)
+                    stationmap = {row[0]: row[1] for row in rows}
+                    for s in stationids:
+                        if s not in stationmap:
+                            stationmap[s] = "Unknown"
+                    return stationmap
         else:
-            conn = self.connection
-            with conn.cursor() as cursor:
-                cursor.execute(
-                    "REPLACE StationidToName(Stationid, Name) VALUES(?,?)",
-                    (stationid, name),
-                )
-                conn.commit()
-                return self.names("*")
+            with self.pool.get_connection() as connection:
+                connection.auto_reconnect = True
+                with connection.cursor() as cursor:
+                    cursor.execute(
+                        "REPLACE StationidToName(Stationid, Name) VALUES(?,?)",
+                        (stationid, name),
+                    )
+                    connection.commit()
+                    return self.names("*")

@@ -17,7 +17,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220827124422
+#  version: 20220828130742
 
 from json import dumps
 import mimetypes
@@ -272,7 +272,10 @@ class InterceptorHandlerFactory:
                         filepath = Path(static_directory) / (
                             path.decode() if type(path) is bytes else path
                         )  # TODO check encoding URLs are not UTF-8?
-                        InterceptorHandler.checkPath(filepath)
+                        try:
+                            InterceptorHandler.checkPath(filepath)
+                        except ValueError:
+                            self.send_response_only(HTTPStatus.FORBIDDEN)
                         if filepath.is_dir():
                             filepath /= "index.html"
                         mime_type = mimetypes.guess_type(filepath)[0]
@@ -298,7 +301,6 @@ class InterceptorHandlerFactory:
             def do_POST(self):
                 logging.info(self.path)
                 if m := re.match(self.updatenamepattern, self.path):
-                    logging.info(m)
                     file_length = int(self.headers.get("Content-Length", -1))
                     try:
                         keyvalues = parse_qs(
@@ -306,13 +308,14 @@ class InterceptorHandlerFactory:
                         )  # encoding is assumed to be UTF-8
                     except ValueError:
                         self.send_response_only(HTTPStatus.BAD_REQUEST)
-                    logging.info(keyvalues)
+                        self.end_headers()
+                        return
                     stationid = keyvalues.get(b"id", [b""])[0].decode("UTF-8")
                     name = keyvalues.get(b"name", [b""])[0].decode("UTF-8")
-                    logging.info(f"{stationid} {name}")
                     if stationid == "" or name == "":
                         self.send_response_only(HTTPStatus.BAD_REQUEST)
-
+                        self.end_headers()
+                        return
                     names = db.names(stationid, name)
                     # TODO refactor duplicate code
                     names = "\n".join(

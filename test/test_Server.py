@@ -1,5 +1,7 @@
 from time import sleep
 import pytest
+from fixtures import database
+
 from io import BytesIO as IO
 from unittest import mock
 from datetime import datetime, timedelta
@@ -9,18 +11,6 @@ from htcollector.Server import InterceptorHandlerFactory
 from htcollector.Database import MeasurementDatabase, Measurement
 
 logging.basicConfig(format="%(asctime)s %(message)s", level="INFO")
-
-
-@pytest.fixture(scope="class")
-def database():
-    db = MeasurementDatabase(
-        database="shellyht",
-        host="127.0.0.1",
-        port="3306",
-        user="test-user",
-        password="test_secret",
-    )
-    return db
 
 
 # helper class and functions to mock the activity of the
@@ -177,7 +167,7 @@ class TestInterceptor:
                         print(start, r)
                         assert len(r) == 0
 
-    def test_GET_HTML_all(self, database, capsys):
+    def test_GET_HTML_html(self, database, capsys):
         stationid = "htmlid-123456"
         interceptorhandler = InterceptorHandlerFactory.getHandler(database, "./static")
 
@@ -196,6 +186,32 @@ class TestInterceptor:
                     with mock.patch.object(interceptorhandler, "wbufsize", lambda: 1):
                         start = datetime.now()
                         request = MockRequest(b"/html")
+                        ihinstance = interceptorhandler(
+                            request, ("127.0.0.1", 12345), "testserver.example.org"
+                        )
+                        captured = capsys.readouterr()
+                        print(captured.out)
+                        assert ihinstance.wfile.getvalue()[:15] == b"HTTP/1.0 200 OK"
+
+    def test_GET_HTML_all(self, database, capsys):
+        stationid = "htmlid-123456"
+        interceptorhandler = InterceptorHandlerFactory.getHandler(database, "./static")
+
+        database.names(
+            stationid, "htmlroom1"
+        )  # without a stationid mapping we never get anything back
+        start = datetime.now()
+        database.storeMeasurement(Measurement(stationid, 10, 40))
+        with mock.patch.object(interceptorhandler, "finish", finish):
+            with mock.patch.object(
+                interceptorhandler, "date_time_string", date_time_string
+            ):
+                with mock.patch.object(
+                    interceptorhandler, "version_string", version_string
+                ):
+                    with mock.patch.object(interceptorhandler, "wbufsize", lambda: 1):
+                        start = datetime.now()
+                        request = MockRequest(b"/all")
                         ihinstance = interceptorhandler(
                             request, ("127.0.0.1", 12345), "testserver.example.org"
                         )
@@ -377,7 +393,7 @@ class TestInterceptor:
                             == b"HTTP/1.0 403 Forbidden"
                         )
 
-    def test_GET_NAME(self, database, capsys):
+    def test_POST_NAME(self, database, capsys):
         stationid = "newname-123456"
         name = "NewName"
 
@@ -422,6 +438,66 @@ class TestInterceptor:
                         print(captured.out)
                         assert ihinstance.wfile.getvalue()[:15] == b"HTTP/1.0 200 OK"
 
+    def test_POST_NAME_fail_extra(self, database, capsys):
+        stationid = "newname-123456"
+        name = "NewName"
+
+        interceptorhandler = InterceptorHandlerFactory.getHandler(database, "./static")
+        with mock.patch.object(interceptorhandler, "finish", finish):
+            with mock.patch.object(
+                interceptorhandler, "date_time_string", date_time_string
+            ):
+                with mock.patch.object(
+                    interceptorhandler, "version_string", version_string
+                ):
+                    with mock.patch.object(interceptorhandler, "wbufsize", lambda: 1):
+                        start = datetime.now()
+                        request = MockPOSTRequest(
+                            b"/name",
+                            bytes(f"id={stationid}&name={name}&extra=42\r\n", "UTF-8"),
+                        )
+
+                        ihinstance = interceptorhandler(
+                            request, ("127.0.0.1", 12345), "testserver.example.org"
+                        )
+                        captured = capsys.readouterr()
+                        print(captured.out)
+                        print(captured.err)
+                        assert (
+                            ihinstance.wfile.getvalue()[:24]
+                            == b"HTTP/1.0 400 Bad Request"
+                        )
+
+    def test_POST_NAME_fail_missing(self, database, capsys):
+        stationid = "newname-123456"
+        name = "NewName"
+
+        interceptorhandler = InterceptorHandlerFactory.getHandler(database, "./static")
+        with mock.patch.object(interceptorhandler, "finish", finish):
+            with mock.patch.object(
+                interceptorhandler, "date_time_string", date_time_string
+            ):
+                with mock.patch.object(
+                    interceptorhandler, "version_string", version_string
+                ):
+                    with mock.patch.object(interceptorhandler, "wbufsize", lambda: 1):
+                        start = datetime.now()
+                        request = MockPOSTRequest(
+                            b"/name",
+                            bytes(f"id={stationid}\r\n", "UTF-8"),
+                        )
+
+                        ihinstance = interceptorhandler(
+                            request, ("127.0.0.1", 12345), "testserver.example.org"
+                        )
+                        captured = capsys.readouterr()
+                        print(captured.out)
+                        print(captured.err)
+                        assert (
+                            ihinstance.wfile.getvalue()[:24]
+                            == b"HTTP/1.0 400 Bad Request"
+                        )
+
     def test_GET_STATIC_fail(self, database, capsys):
         interceptorhandler = InterceptorHandlerFactory.getHandler(database, "./static")
 
@@ -445,6 +521,29 @@ class TestInterceptor:
                             == b"HTTP/1.0 404 Not Found"
                         )
 
+    def test_GET_STATIC_fail_relative(self, database, capsys):
+        interceptorhandler = InterceptorHandlerFactory.getHandler(database, "./static")
+
+        with mock.patch.object(interceptorhandler, "finish", finish):
+            with mock.patch.object(
+                interceptorhandler, "date_time_string", date_time_string
+            ):
+                with mock.patch.object(
+                    interceptorhandler, "version_string", version_string
+                ):
+                    with mock.patch.object(interceptorhandler, "wbufsize", lambda: 1):
+                        request = MockRequest(b"/static/../htcollector/")
+                        ihinstance = interceptorhandler(
+                            request, ("127.0.0.1", 12345), "testserver.example.org"
+                        )
+                        captured = capsys.readouterr()
+                        print(captured.out)
+                        print(captured.err)
+                        assert (
+                            ihinstance.wfile.getvalue()[:22]
+                            == b"HTTP/1.0 403 Forbidden"
+                        )
+
     def test_GET_STATIC_stylesheet(self, database, capsys):
         interceptorhandler = InterceptorHandlerFactory.getHandler(database, "./static")
 
@@ -457,6 +556,26 @@ class TestInterceptor:
                 ):
                     with mock.patch.object(interceptorhandler, "wbufsize", lambda: 1):
                         request = MockRequest(b"/static/css/stylesheet.css")
+                        ihinstance = interceptorhandler(
+                            request, ("127.0.0.1", 12345), "testserver.example.org"
+                        )
+                        captured = capsys.readouterr()
+                        print(captured.out)
+                        print(captured.err)
+                        assert ihinstance.wfile.getvalue()[:15] == b"HTTP/1.0 200 OK"
+
+    def test_GET_STATIC_favicon(self, database, capsys):
+        interceptorhandler = InterceptorHandlerFactory.getHandler(database, "./static")
+
+        with mock.patch.object(interceptorhandler, "finish", finish):
+            with mock.patch.object(
+                interceptorhandler, "date_time_string", date_time_string
+            ):
+                with mock.patch.object(
+                    interceptorhandler, "version_string", version_string
+                ):
+                    with mock.patch.object(interceptorhandler, "wbufsize", lambda: 1):
+                        request = MockRequest(b"/favicon.ico")
                         ihinstance = interceptorhandler(
                             request, ("127.0.0.1", 12345), "testserver.example.org"
                         )

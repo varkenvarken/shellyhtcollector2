@@ -4,21 +4,9 @@ from dateutil import tz
 
 import pytest
 from pytest import approx
+from fixtures import database
 
 from htcollector import Database
-
-
-@pytest.fixture(scope="class")
-def database():
-    db = Database.MeasurementDatabase(
-        database="shellyht",
-        host="127.0.0.1",
-        port="3306",
-        user="test-user",
-        password="test_secret",
-    )
-    return db
-
 
 @pytest.fixture(scope="class")
 def measurement(stationid):

@@ -17,7 +17,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220817155609
+#  version: 20220828124631
 
 import argparse
 from sys import stderr, exit
@@ -92,7 +92,7 @@ def get_args(arguments=None):
     return parser.parse_args(arguments)
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     args = get_args()
 
     logging.basicConfig(format="%(asctime)s %(message)s", level=args.loglevel)
