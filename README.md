@@ -22,7 +22,7 @@ where the part `http://mymachine:8083/sensorlog` is something you configure in t
 It also provides means to associate meaningful labels with the station-ids and generate html,
 json or a png image with the latest measurements.
 
-# Installation and use
+## Installation and use
 
 'htcollector` is a Python package that can be used to implement your own server
 that intercepts messages from Shelly HT devices or you can use the default server implementation
@@ -32,7 +32,7 @@ If you are already working with Docker things are even simpler as the two necess
 as part of this project and available on
 [the GitHub Container Registry](https://github.com/varkenvarken?tab=packages&repo_name=shellyhtcollector2)
 
-## Easy installation using Docker
+### Easy installation using Docker
 
 `htcollector` is provided as an easy to use [Docker solution](https://github.com/varkenvarken?tab=packages&repo_name=shellyhtcollector2) too:
 
@@ -78,10 +78,10 @@ and click on the device you want to change the label of.
 
     Tested with Docker version 20.10.12, build 20.10.12-0ubuntu2~20.04.1 / Docker Compose version v2.6.0
 
-## Installation as a library
+### Installation as a library
 
 You can of course build your own solution on top of the htcollector module but that takes a few steps. Installing the htcollector package from Pypi is simple enough but it also depends on the MariaDB connector.
-### Install mariadb connector for Python
+#### Install mariadb connector for Python
 The `mariadb` python module is not pure Python and depends on `libmariadb`, so setup is less straight forward than you would hope:
 ``` bash
 wget https://downloads.mariadb.com/MariaDB/mariadb_repo_setup
@@ -93,7 +93,7 @@ sudo python3 -m pip install mariadb
 ```
 Here we have chosen to install it for everyone, but if you used a virtual environment your could do away with the `sudo`s
 
-### Install the package
+#### Install the package
 
 Install it directly from PyPi
 
@@ -112,7 +112,7 @@ python setup.py install
 !!! note
     It might be a good idea to do this inside a virtual environment!
 
-## Running the server
+### Running the server
 
 Assuming you have MariaDB running on the same machine with a database (schema) `shellyht`,
 and that the user defined in the environment variable DBUSER has enough privileges to create a tables,
@@ -120,7 +120,7 @@ the following command will create the necessary tables if not yet present and st
 ```bash
 nohup python3 -m shellyhtcollector&
 ```
-## Additional configuration
+### Additional configuration
 
 The reporting tools assume that a table `StationidToName` exists that contains a mapping between StationId and Name.
 
@@ -137,31 +137,23 @@ http GET "http://localhost:1883/name?id=shellyht-6A566F&name=dining room"
 ```
 
 
-## Generating reports
-An html file with the last recorded measurements can be generated with:
-```
-cd shellyhtcollector; python3 tools/last.py --html > index.html
-```
-
-Both commands assume that you have set two environment variables
-
-- DBUSER
-- DBPASSWORD
-
-# API documentation
+## API documentation
 
 [Available on the GitHub pages of this repo](https://varkenvarken.github.io/shellyhtcollector2/apidoc/htcollector/)
-# Architecture overview
+## Architecture overview
 
 ```mermaid
 flowchart LR
-    s1[shellyht] --> w[webserver] <--> d[database]
-    s2[shellyht] --> w[webserver]
-    s3[shellyht] --> w[webserver]
-    s4[shellyht] --> w[webserver]
+    s1[shellyht] --> docker
+    s2[shellyht] --> docker
+    s3[shellyht] --> docker
+    s4[shellyht] --> docker
+    subgraph docker
+        w[webserver] <--> d[database]
+    end
 ```
 
-# Implementation details
+## Implementation details
 
 A ShellyHT can be configured to log temperature and humidity changes to a certain host:port using HTTP. 
 
@@ -173,6 +165,6 @@ The path of a typical GET request will look for example like:
 
 !!! note
 
-    The Webserver will *only* accept GET request that have that exact format!
+    The Webserver will *only* accept GET requests that have that exact format!
     The '/sensorlog' part needs to be configured in the Shelly HT device
 
