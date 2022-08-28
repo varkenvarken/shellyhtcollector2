@@ -327,20 +327,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../htcollector.Graph/" class="md-nav__link">
-        htcollector.Graph
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../htcollector.Database/" class="md-nav__link">
         htcollector.Database
       </a>
@@ -435,7 +421,7 @@
 <span class="c1">#  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,</span>
 <span class="c1">#  MA 02110-1301, USA.</span>
 <span class="c1">#</span>
-<span class="c1">#  version: 20220819113121</span>
+<span class="c1">#  version: 20220828123631</span>
 
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">re</span>
@@ -494,27 +480,37 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">password</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">connection</span> <span class="o">=</span> <span class="n">mariadb</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span>
-            <span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="n">password</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="n">host</span><span class="p">,</span> <span class="n">database</span><span class="o">=</span><span class="n">database</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pool</span> <span class="o">=</span> <span class="n">mariadb</span><span class="o">.</span><span class="n">ConnectionPool</span><span class="p">(</span>
+            <span class="n">pool_name</span><span class="o">=</span><span class="s2">&quot;connection_pool_1&quot;</span><span class="p">,</span>
+            <span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">,</span>
+            <span class="n">password</span><span class="o">=</span><span class="n">password</span><span class="p">,</span>
+            <span class="n">host</span><span class="o">=</span><span class="n">host</span><span class="p">,</span>
+            <span class="n">database</span><span class="o">=</span><span class="n">database</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">auto_reconnect</span> <span class="o">=</span> <span class="kc">True</span>
 
-        <span class="c1"># the timestamp is configured for millisecond resolution</span>
-        <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
-        <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-            <span class="sd">&quot;&quot;&quot;CREATE TABLE IF NOT EXISTS Measurements(</span>
-<span class="sd">            Timestamp DATETIME(3) DEFAULT CURRENT_TIMESTAMP,</span>
-<span class="sd">            Stationid VARCHAR(100),</span>
-<span class="sd">            Temperature REAL,</span>
-<span class="sd">            Humidity REAL);&quot;&quot;&quot;</span>
-        <span class="p">)</span>
-        <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;CREATE INDEX IF NOT EXISTS ts ON Measurements(Timestamp);&quot;&quot;&quot;</span><span class="p">)</span>
-        <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;CREATE INDEX IF NOT EXISTS si ON Measurements(Stationid);&quot;&quot;&quot;</span><span class="p">)</span>
-        <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-            <span class="sd">&quot;&quot;&quot;CREATE TABLE IF NOT EXISTS StationidToName(</span>
-<span class="sd">            Stationid  VARCHAR(100) NOT NULL PRIMARY KEY,</span>
-<span class="sd">            Name TEXT NOT NULL);&quot;&quot;&quot;</span>
-        <span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">get_connection</span><span class="p">()</span> <span class="k">as</span> <span class="n">connection</span><span class="p">:</span>
+            <span class="n">connection</span><span class="o">.</span><span class="n">auto_reconnect</span> <span class="o">=</span> <span class="kc">True</span>
+
+            <span class="c1"># the timestamp is configured for millisecond resolution</span>
+            <span class="k">with</span> <span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
+                <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                    <span class="sd">&quot;&quot;&quot;CREATE TABLE IF NOT EXISTS Measurements(</span>
+<span class="sd">                    Timestamp DATETIME(3) DEFAULT CURRENT_TIMESTAMP,</span>
+<span class="sd">                    Stationid VARCHAR(100),</span>
+<span class="sd">                    Temperature REAL,</span>
+<span class="sd">                    Humidity REAL);&quot;&quot;&quot;</span>
+                <span class="p">)</span>
+                <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                    <span class="sd">&quot;&quot;&quot;CREATE INDEX IF NOT EXISTS ts ON Measurements(Timestamp);&quot;&quot;&quot;</span>
+                <span class="p">)</span>
+                <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                    <span class="sd">&quot;&quot;&quot;CREATE INDEX IF NOT EXISTS si ON Measurements(Stationid);&quot;&quot;&quot;</span>
+                <span class="p">)</span>
+                <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                    <span class="sd">&quot;&quot;&quot;CREATE TABLE IF NOT EXISTS StationidToName(</span>
+<span class="sd">                    Stationid  VARCHAR(100) NOT NULL PRIMARY KEY,</span>
+<span class="sd">                    Name TEXT NOT NULL);&quot;&quot;&quot;</span>
+                <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">storeMeasurement</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">measurement</span><span class="p">):</span><span id="htcollector.Database.MeasurementDatabase.storeMeasurement"></span><a class="mkapi-docs-link" title="htcollector.Database.MeasurementDatabase.storeMeasurement" href="../../htcollector.Database/#htcollector.Database.MeasurementDatabase.storeMeasurement">DOCS</a>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -525,16 +521,22 @@
 
 <span class="sd">        Measurements do not contain timestamps, the are added automatically.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
-        <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-            <span class="sd">&quot;&quot;&quot;INSERT INTO Measurements(Stationid, Temperature, Humidity)</span>
-<span class="sd">                                    VALUES (?,?,?)&quot;&quot;&quot;</span><span class="p">,</span>
-            <span class="p">(</span><span class="n">measurement</span><span class="o">.</span><span class="n">stationid</span><span class="p">,</span> <span class="n">measurement</span><span class="o">.</span><span class="n">temperature</span><span class="p">,</span> <span class="n">measurement</span><span class="o">.</span><span class="n">humidity</span><span class="p">),</span>
-        <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
-        <span class="n">n</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">rowcount</span>
-        <span class="n">cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">n</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">get_connection</span><span class="p">()</span> <span class="k">as</span> <span class="n">connection</span><span class="p">:</span>
+            <span class="n">connection</span><span class="o">.</span><span class="n">auto_reconnect</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">with</span> <span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
+                <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                    <span class="sd">&quot;&quot;&quot;INSERT INTO Measurements(Stationid, Temperature, Humidity)</span>
+<span class="sd">                           VALUES (?,?,?)&quot;&quot;&quot;</span><span class="p">,</span>
+                    <span class="p">(</span>
+                        <span class="n">measurement</span><span class="o">.</span><span class="n">stationid</span><span class="p">,</span>
+                        <span class="n">measurement</span><span class="o">.</span><span class="n">temperature</span><span class="p">,</span>
+                        <span class="n">measurement</span><span class="o">.</span><span class="n">humidity</span><span class="p">,</span>
+                    <span class="p">),</span>
+                <span class="p">)</span>
+                <span class="n">connection</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+                <span class="n">n</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">rowcount</span>
+                <span class="n">cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                <span class="k">return</span> <span class="n">n</span>
 
     <span class="k">def</span> <span class="nf">retrieveMeasurements</span><span class="p">(</span><span id="htcollector.Database.MeasurementDatabase.retrieveMeasurements"></span><a class="mkapi-docs-link" title="htcollector.Database.MeasurementDatabase.retrieveMeasurements" href="../../htcollector.Database/#htcollector.Database.MeasurementDatabase.retrieveMeasurements">DOCS</a>
         <span class="bp">self</span><span class="p">,</span> <span class="n">stationid</span><span class="p">,</span> <span class="n">starttime</span><span class="p">:</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">endtime</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">=</span> <span class="kc">None</span>
@@ -561,23 +563,27 @@
             <span class="n">microsecond</span><span class="o">=</span><span class="p">(</span><span class="n">starttime</span><span class="o">.</span><span class="n">microsecond</span> <span class="o">//</span> <span class="mi">1000</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000</span>
         <span class="p">)</span>  <span class="c1"># round down to millis</span>
         <span class="k">if</span> <span class="n">stationid</span> <span class="o">==</span> <span class="s2">&quot;*&quot;</span><span class="p">:</span>
-            <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
-            <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;&quot;&quot;SELECT Timestamp, Stationid, Temperature, Humidity</span>
-<span class="s2">                        FROM Measurements</span>
-<span class="s2">                        WHERE Timestamp &gt;= ? AND Timestamp &lt;= ?&quot;&quot;&quot;</span><span class="p">,</span>
-                <span class="p">(</span><span class="n">starttime</span><span class="p">,</span> <span class="n">endtime</span><span class="p">),</span>
-            <span class="p">)</span>
-            <span class="n">rows</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">get_connection</span><span class="p">()</span> <span class="k">as</span> <span class="n">connection</span><span class="p">:</span>
+                <span class="n">connection</span><span class="o">.</span><span class="n">auto_reconnect</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">with</span> <span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
+                    <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;&quot;&quot;SELECT Timestamp, Stationid, Temperature, Humidity</span>
+<span class="s2">                                FROM Measurements</span>
+<span class="s2">                                WHERE Timestamp &gt;= ? AND Timestamp &lt;= ?&quot;&quot;&quot;</span><span class="p">,</span>
+                        <span class="p">(</span><span class="n">starttime</span><span class="p">,</span> <span class="n">endtime</span><span class="p">),</span>
+                    <span class="p">)</span>
+                    <span class="n">rows</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
-            <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;&quot;&quot;SELECT Timestamp, Stationid, Temperature, Humidity</span>
-<span class="s2">                        FROM Measurements</span>
-<span class="s2">                        WHERE Stationid = ? AND Timestamp &gt;= ? AND Timestamp &lt;= ?&quot;&quot;&quot;</span><span class="p">,</span>
-                <span class="p">(</span><span class="n">stationid</span><span class="p">,</span> <span class="n">starttime</span><span class="p">,</span> <span class="n">endtime</span><span class="p">),</span>
-            <span class="p">)</span>
-            <span class="n">rows</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">get_connection</span><span class="p">()</span> <span class="k">as</span> <span class="n">connection</span><span class="p">:</span>
+                <span class="n">connection</span><span class="o">.</span><span class="n">auto_reconnect</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">with</span> <span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
+                    <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;&quot;&quot;SELECT Timestamp, Stationid, Temperature, Humidity</span>
+<span class="s2">                                FROM Measurements</span>
+<span class="s2">                                WHERE Stationid = ? AND Timestamp &gt;= ? AND Timestamp &lt;= ?&quot;&quot;&quot;</span><span class="p">,</span>
+                        <span class="p">(</span><span class="n">stationid</span><span class="p">,</span> <span class="n">starttime</span><span class="p">,</span> <span class="n">endtime</span><span class="p">),</span>
+                    <span class="p">)</span>
+                    <span class="n">rows</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
 
         <span class="c1"># mariadb / mysql timestamps are in UTC but returned as &#39;naive&#39; datetime objects</span>
         <span class="n">rows</span> <span class="o">=</span> <span class="p">[</span>
@@ -621,29 +627,32 @@
                 <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># get the data</span>
-            <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
-            <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-                <span class="sd">&quot;&quot;&quot;SELECT Timestamp as &#39;Timestamp [timestamp]&#39;, Stationid, Temperature, Humidity</span>
-<span class="sd">            FROM Measurements</span>
-<span class="sd">            WHERE Stationid = ? ORDER BY timestamp DESC LIMIT 1;&quot;&quot;&quot;</span><span class="p">,</span>
-                <span class="p">(</span><span class="n">stationid</span><span class="p">,),</span>
-            <span class="p">)</span>
-            <span class="n">rows</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
-            <span class="c1"># mariadb / mysql timestamps are in UTC but returned as &#39;naive&#39; datetime objects</span>
-            <span class="n">rows</span> <span class="o">=</span> <span class="p">[</span>
-                <span class="p">{</span>
-                    <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tzinfo</span><span class="o">=</span><span class="n">tz</span><span class="o">.</span><span class="n">UTC</span><span class="p">),</span>
-                    <span class="s2">&quot;deltat&quot;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                    <span class="s2">&quot;stationid&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-                    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">_names</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;unknown&quot;</span><span class="p">),</span>
-                    <span class="s2">&quot;temperature&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
-                    <span class="s2">&quot;humidity&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
-                <span class="p">}</span>
-                <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span>
-            <span class="p">]</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">get_connection</span><span class="p">()</span> <span class="k">as</span> <span class="n">connection</span><span class="p">:</span>
+                <span class="n">connection</span><span class="o">.</span><span class="n">auto_reconnect</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">with</span> <span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
+                    <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                        <span class="sd">&quot;&quot;&quot;SELECT Timestamp as &#39;Timestamp [timestamp]&#39;, Stationid, Temperature, Humidity</span>
+<span class="sd">                            FROM Measurements</span>
+<span class="sd">                            WHERE Stationid = ? ORDER BY timestamp DESC LIMIT 1;&quot;&quot;&quot;</span><span class="p">,</span>
+                        <span class="p">(</span><span class="n">stationid</span><span class="p">,),</span>
+                    <span class="p">)</span>
+                    <span class="n">rows</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+                    <span class="c1"># mariadb / mysql timestamps are in UTC but returned as &#39;naive&#39; datetime objects</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;retrieveLastMeasurement </span><span class="si">{</span><span class="n">stationid</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">rows</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="n">rows</span> <span class="o">=</span> <span class="p">[</span>
+                        <span class="p">{</span>
+                            <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tzinfo</span><span class="o">=</span><span class="n">tz</span><span class="o">.</span><span class="n">UTC</span><span class="p">),</span>
+                            <span class="s2">&quot;deltat&quot;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                            <span class="s2">&quot;stationid&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">_names</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;unknown&quot;</span><span class="p">),</span>
+                            <span class="s2">&quot;temperature&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+                            <span class="s2">&quot;humidity&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
+                        <span class="p">}</span>
+                        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span>
+                    <span class="p">]</span>
         <span class="k">return</span> <span class="n">rows</span>
 
-    <span class="k">def</span> <span class="nf">retrieveDatetimeBefore</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stationid</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span><span id="htcollector.Database.MeasurementDatabase.retrieveDatetimeBefore"></span><a class="mkapi-docs-link" title="htcollector.Database.MeasurementDatabase.retrieveDatetimeBefore" href="../../htcollector.Database/#htcollector.Database.MeasurementDatabase.retrieveDatetimeBefore">DOCS</a>
+    <span class="k">def</span> <span class="nf">retrieveDatetimeBefore</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stationid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">datetime</span><span class="p">):</span><span id="htcollector.Database.MeasurementDatabase.retrieveDatetimeBefore"></span><a class="mkapi-docs-link" title="htcollector.Database.MeasurementDatabase.retrieveDatetimeBefore" href="../../htcollector.Database/#htcollector.Database.MeasurementDatabase.retrieveDatetimeBefore">DOCS</a>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns the time of the last measurement preceding a given time.</span>
 
@@ -655,24 +664,30 @@
 <span class="sd">            datetime or None: the time of the last measurement preceding a given time or None if the isn one</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
+        <span class="n">t</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">astimezone</span><span class="p">(</span><span class="n">tz</span><span class="o">=</span><span class="n">tz</span><span class="o">.</span><span class="n">UTC</span><span class="p">)</span>
+
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;retrieveDatetimeBefore&quot;</span><span class="p">,</span> <span class="n">stationid</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
 
-        <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
-        <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-            <span class="sd">&quot;&quot;&quot;SELECT Timestamp as &#39;Timestamp [timestamp]&#39;</span>
-<span class="sd">               FROM Measurements</span>
-<span class="sd">               WHERE Stationid = ? AND Timestamp &lt; ? ORDER BY timestamp DESC LIMIT 1;&quot;&quot;&quot;</span><span class="p">,</span>
-            <span class="p">(</span><span class="n">stationid</span><span class="p">,</span> <span class="n">t</span><span class="p">),</span>
-        <span class="p">)</span>
-        <span class="n">rows</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
-        <span class="c1"># mariadb / mysql timestamps are in UTC but returned as &#39;naive&#39; datetime objects</span>
-        <span class="k">return</span> <span class="n">rows</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tzinfo</span><span class="o">=</span><span class="n">tz</span><span class="o">.</span><span class="n">UTC</span><span class="p">)</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">get_connection</span><span class="p">()</span> <span class="k">as</span> <span class="n">connection</span><span class="p">:</span>
+            <span class="n">connection</span><span class="o">.</span><span class="n">auto_reconnect</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">with</span> <span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
+                <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                    <span class="sd">&quot;&quot;&quot;SELECT Timestamp</span>
+<span class="sd">                    FROM Measurements</span>
+<span class="sd">                    WHERE Stationid = ? AND Timestamp &lt; ? ORDER BY Timestamp DESC LIMIT 1&quot;&quot;&quot;</span><span class="p">,</span>
+                    <span class="p">(</span><span class="n">stationid</span><span class="p">,</span> <span class="n">t</span><span class="p">),</span>
+                <span class="p">)</span>
+                <span class="n">rows</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">rows</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="c1"># mariadb / mysql timestamps are in UTC but returned as &#39;naive&#39; datetime objects</span>
+                <span class="k">return</span> <span class="n">rows</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tzinfo</span><span class="o">=</span><span class="n">tz</span><span class="o">.</span><span class="n">UTC</span><span class="p">)</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
 
     <span class="k">def</span> <span class="nf">uniqueStations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">conn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span>
-        <span class="n">cursor</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
-        <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;SELECT DISTINCT(Stationid) FROM Measurements&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="p">[</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()]</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">get_connection</span><span class="p">()</span> <span class="k">as</span> <span class="n">connection</span><span class="p">:</span>
+            <span class="n">connection</span><span class="o">.</span><span class="n">auto_reconnect</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">with</span> <span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
+                <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;SELECT DISTINCT(Stationid) FROM Measurements&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="p">[</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()]</span>
 
     <span class="k">def</span> <span class="nf">names</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stationid</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span><span id="htcollector.Database.MeasurementDatabase.names"></span><a class="mkapi-docs-link" title="htcollector.Database.MeasurementDatabase.names" href="../../htcollector.Database/#htcollector.Database.MeasurementDatabase.names">DOCS</a>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -683,22 +698,31 @@
 <span class="sd">            name (str)): the name to associate with a stationid (ignored if stationid is &#39;*&#39;)</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            list: either an empty list when inserting or replacing or a list of tuples(stationid, name)</span>
+<span class="sd">            dict: a dict(stationid:name)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">stationid</span> <span class="o">==</span> <span class="s2">&quot;*&quot;</span><span class="p">:</span>
-            <span class="n">conn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span>
-            <span class="n">cursor</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
-            <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;SELECT * FROM StationidToName&quot;</span><span class="p">)</span>
-            <span class="k">return</span> <span class="p">[(</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()]</span>
+            <span class="n">stationids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">uniqueStations</span><span class="p">()</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">get_connection</span><span class="p">()</span> <span class="k">as</span> <span class="n">connection</span><span class="p">:</span>
+                <span class="n">connection</span><span class="o">.</span><span class="n">auto_reconnect</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">with</span> <span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
+                    <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;SELECT * FROM StationidToName&quot;</span><span class="p">)</span>
+                    <span class="n">rows</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;names&gt;&gt;&gt;&quot;</span><span class="p">,</span> <span class="n">rows</span><span class="p">)</span>
+                    <span class="n">stationmap</span> <span class="o">=</span> <span class="p">{</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">}</span>
+                    <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">stationids</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">s</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">stationmap</span><span class="p">:</span>
+                            <span class="n">stationmap</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Unknown&quot;</span>
+                    <span class="k">return</span> <span class="n">stationmap</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">conn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span>
-            <span class="n">cursor</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
-            <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-                <span class="s2">&quot;REPLACE StationidToName(Stationid, Name) VALUES(?,?)&quot;</span><span class="p">,</span>
-                <span class="p">(</span><span class="n">stationid</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span>
-            <span class="p">)</span>
-            <span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
-            <span class="k">return</span> <span class="p">[]</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">get_connection</span><span class="p">()</span> <span class="k">as</span> <span class="n">connection</span><span class="p">:</span>
+                <span class="n">connection</span><span class="o">.</span><span class="n">auto_reconnect</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">with</span> <span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
+                    <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                        <span class="s2">&quot;REPLACE StationidToName(Stationid, Name) VALUES(?,?)&quot;</span><span class="p">,</span>
+                        <span class="p">(</span><span class="n">stationid</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span>
+                    <span class="p">)</span>
+                    <span class="n">connection</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+                    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">)</span>
 </code></pre></div>
 </div>
 </div>

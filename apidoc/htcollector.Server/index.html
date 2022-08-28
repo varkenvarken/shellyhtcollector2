@@ -331,20 +331,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../htcollector.Graph/" class="md-nav__link">
-        htcollector.Graph
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../htcollector.Database/" class="md-nav__link">
         htcollector.Database
       </a>
@@ -450,6 +436,13 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#socketserverbaseserverprocess_request" class="md-nav__link">
+    process_request
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#socketserverbaseserverfinish_request" class="md-nav__link">
     finish_request
   </a>
@@ -466,6 +459,13 @@
           <li class="md-nav__item">
   <a href="#socketservertcpserverserver_activate" class="md-nav__link">
     server_activate
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#socketservertcpserverserver_close" class="md-nav__link">
+    server_close
   </a>
   
 </li>
@@ -494,20 +494,6 @@
           <li class="md-nav__item">
   <a href="#socketservertcpserverclose_request" class="md-nav__link">
     close_request
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#socketserverthreadingmixinprocess_request_thread" class="md-nav__link">
-    process_request_thread
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#socketserverthreadingmixinprocess_request" class="md-nav__link">
-    process_request
   </a>
   
 </li>
@@ -630,6 +616,13 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#socketserverbaseserverprocess_request" class="md-nav__link">
+    process_request
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#socketserverbaseserverfinish_request" class="md-nav__link">
     finish_request
   </a>
@@ -646,6 +639,13 @@
           <li class="md-nav__item">
   <a href="#socketservertcpserverserver_activate" class="md-nav__link">
     server_activate
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#socketservertcpserverserver_close" class="md-nav__link">
+    server_close
   </a>
   
 </li>
@@ -674,20 +674,6 @@
           <li class="md-nav__item">
   <a href="#socketservertcpserverclose_request" class="md-nav__link">
     close_request
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#socketserverthreadingmixinprocess_request_thread" class="md-nav__link">
-    process_request_thread
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#socketserverthreadingmixinprocess_request" class="md-nav__link">
-    process_request
   </a>
   
 </li>
@@ -741,7 +727,7 @@ that writes measurements to the provided MeasurementDatabase.<a class="mkapi-src
 
 <li class="class"><code class="mkapi-item-name"><a href="#htcollector.Server.Interceptor">Interceptor</a></code>
 
-<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Mix-in class to handle each request in a new thread.<a class="mkapi-src-link" href="../source/htcollector.Server/#htcollector.Server.Interceptor" title="Source for htcollector.Server.Interceptor">&lt;/&gt;</a></span></li>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Base class for various socket-based server classes.<a class="mkapi-src-link" href="../source/htcollector.Server/#htcollector.Server.Interceptor" title="Source for htcollector.Server.Interceptor">&lt;/&gt;</a></span></li>
 
 
 </ul></div>
@@ -785,10 +771,6 @@ that writes measurements to the provided MeasurementDatabase.</p></div>
           <span class="mkapi-section-name-body bases">Bases</span> 
         </div>
       <div class="mkapi-section-body bases">
-<span class="mkapi-base">http.server.ThreadingHTTPServer</span>
-
-<span class="mkapi-base">socketserver.ThreadingMixIn</span>
-
 <span class="mkapi-base">http.server.HTTPServer</span>
 
 <span class="mkapi-base">socketserver.TCPServer</span>
@@ -797,7 +779,47 @@ that writes measurements to the provided MeasurementDatabase.</p></div>
 </div>
     </div>
   <div class="mkapi-section">
-      <div class="mkapi-section-body"><p>Mix-in class to handle each request in a new thread.</p></div>
+      <div class="mkapi-section-body"><p>Base class for various socket-based server classes.</p>
+<p>Defaults to synchronous IP stream (i.e., TCP).</p>
+<p>Methods for the caller:</p>
+<ul>
+<li><strong>init</strong>(server_address, RequestHandlerClass, bind_and_activate=True)</li>
+<li>serve_forever(poll_interval=0.5)</li>
+<li>shutdown()</li>
+<li>handle_request()  # if you don't use serve_forever()</li>
+<li>fileno() -&gt; int   # for selector</li>
+</ul>
+<p>Methods that may be overridden:</p>
+<ul>
+<li>server_bind()</li>
+<li>server_activate()</li>
+<li>get_request() -&gt; request, client_address</li>
+<li>handle_timeout()</li>
+<li>verify_request(request, client_address)</li>
+<li>process_request(request, client_address)</li>
+<li>shutdown_request(request)</li>
+<li>close_request(request)</li>
+<li>handle_error()</li>
+</ul>
+<p>Methods for derived classes:</p>
+<ul>
+<li>finish_request(request, client_address)</li>
+</ul>
+<p>Class variables that may be overridden by derived classes or
+instances:</p>
+<ul>
+<li>timeout</li>
+<li>address_family</li>
+<li>socket_type</li>
+<li>request_queue_size (only for stream sockets)</li>
+<li>allow_reuse_address</li>
+</ul>
+<p>Instance variables:</p>
+<ul>
+<li>server_address</li>
+<li>RequestHandlerClass</li>
+<li>socket</li>
+</ul></div>
     </div>
   <div class="mkapi-section methods">
       <div class="mkapi-section-name methods">
@@ -832,13 +854,9 @@ that writes measurements to the provided MeasurementDatabase.</p></div>
 
 <span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Called if no new request arrives within self.timeout.<a class="mkapi-src-link" href="../source/socketserver/#socketserver.BaseServer.handle_timeout" title="Source for socketserver.BaseServer.handle_timeout">&lt;/&gt;</a></span></li>
 
-<li class="method"><code class="mkapi-item-name"><a href="#socketserver.ThreadingMixIn.process_request">process_request</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">request</code>, <code class="mkapi-object-signature">client_address</code><code class="mkapi-object-parenthesis">)</code>
+<li class="method"><code class="mkapi-item-name"><a href="#socketserver.BaseServer.process_request">process_request</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">request</code>, <code class="mkapi-object-signature">client_address</code><code class="mkapi-object-parenthesis">)</code>
 
-<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Start a new thread to process the request.<a class="mkapi-src-link" href="../source/socketserver/#socketserver.ThreadingMixIn.process_request" title="Source for socketserver.ThreadingMixIn.process_request">&lt;/&gt;</a></span></li>
-
-<li class="method"><code class="mkapi-item-name"><a href="#socketserver.ThreadingMixIn.process_request_thread">process_request_thread</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">request</code>, <code class="mkapi-object-signature">client_address</code><code class="mkapi-object-parenthesis">)</code>
-
-<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Same as in BaseServer but as a thread.<a class="mkapi-src-link" href="../source/socketserver/#socketserver.ThreadingMixIn.process_request_thread" title="Source for socketserver.ThreadingMixIn.process_request_thread">&lt;/&gt;</a></span></li>
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Call finish_request.<a class="mkapi-src-link" href="../source/socketserver/#socketserver.BaseServer.process_request" title="Source for socketserver.BaseServer.process_request">&lt;/&gt;</a></span></li>
 
 <li class="method"><code class="mkapi-item-name"><a href="#socketserver.BaseServer.serve_forever">serve_forever</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">poll_interval</code><code class="mkapi-object-parenthesis">)</code>
 
@@ -851,6 +869,10 @@ that writes measurements to the provided MeasurementDatabase.</p></div>
 <li class="method"><code class="mkapi-item-name"><a href="#http.server.HTTPServer.server_bind">server_bind</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code>
 
 <span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Override server_bind to store the server name.<a class="mkapi-src-link" href="../source/http.server/#http.server.HTTPServer.server_bind" title="Source for http.server.HTTPServer.server_bind">&lt;/&gt;</a></span></li>
+
+<li class="method"><code class="mkapi-item-name"><a href="#socketserver.TCPServer.server_close">server_close</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code>
+
+<span class="mkapi-item-dash">&mdash;</span> <span class="mkapi-item-description">Called to clean-up the server.<a class="mkapi-src-link" href="../source/socketserver/#socketserver.TCPServer.server_close" title="Source for socketserver.TCPServer.server_close">&lt;/&gt;</a></span></li>
 
 <li class="method"><code class="mkapi-item-name"><a href="#socketserver.BaseServer.service_actions">service_actions</a></code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code>
 
@@ -1007,6 +1029,27 @@ needs to be run during the loop.</p></div>
     </div>
   
     <div class="mkapi-member">
+      <div class="mkapi-node" id="socketserver.BaseServer.process_request">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object method code">
+    <div class="mkapi-object-kind method">method</div>
+    <h3 id="socketserverbaseserverprocess_request" class="mkapi-object-body method"><code class="mkapi-object-name">process_request</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">request</code>, <code class="mkapi-object-signature">client_address</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/socketserver/#socketserver.BaseServer.process_request" title="Source for socketserver.BaseServer.process_request">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Call finish_request.</p>
+<p>Overridden by ForkingMixIn and ThreadingMixIn.</p></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+    <div class="mkapi-member">
       <div class="mkapi-node" id="socketserver.BaseServer.finish_request">
 <div class='mkapi-object-container'>
   <div class="mkapi-object method code">
@@ -1061,6 +1104,27 @@ needs to be run during the loop.</p></div>
 <div class="mkapi-docstring">
 <div class="mkapi-section">
       <div class="mkapi-section-body"><p>Called by constructor to activate the server.</p>
+<p>May be overridden.</p></div>
+    </div>
+  </div>
+
+</div>
+    </div>
+  
+    <div class="mkapi-member">
+      <div class="mkapi-node" id="socketserver.TCPServer.server_close">
+<div class='mkapi-object-container'>
+  <div class="mkapi-object method code">
+    <div class="mkapi-object-kind method">method</div>
+    <h3 id="socketservertcpserverserver_close" class="mkapi-object-body method"><code class="mkapi-object-name">server_close</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-parenthesis">)</code></h3>
+  </div>
+  <div class="mkapi-src-link">
+    <a class="mkapi-src-link" href="../source/socketserver/#socketserver.TCPServer.server_close" title="Source for socketserver.TCPServer.server_close">&lt;/&gt;</a>
+  </div>
+</div>
+<div class="mkapi-docstring">
+<div class="mkapi-section">
+      <div class="mkapi-section-body"><p>Called to clean-up the server.</p>
 <p>May be overridden.</p></div>
     </div>
   </div>
@@ -1144,47 +1208,6 @@ needs to be run during the loop.</p></div>
 <div class="mkapi-docstring">
 <div class="mkapi-section">
       <div class="mkapi-section-body"><p>Called to clean up an individual request.</p></div>
-    </div>
-  </div>
-
-</div>
-    </div>
-  
-    <div class="mkapi-member">
-      <div class="mkapi-node" id="socketserver.ThreadingMixIn.process_request_thread">
-<div class='mkapi-object-container'>
-  <div class="mkapi-object method code">
-    <div class="mkapi-object-kind method">method</div>
-    <h3 id="socketserverthreadingmixinprocess_request_thread" class="mkapi-object-body method"><code class="mkapi-object-name">process_request_thread</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">request</code>, <code class="mkapi-object-signature">client_address</code><code class="mkapi-object-parenthesis">)</code></h3>
-  </div>
-  <div class="mkapi-src-link">
-    <a class="mkapi-src-link" href="../source/socketserver/#socketserver.ThreadingMixIn.process_request_thread" title="Source for socketserver.ThreadingMixIn.process_request_thread">&lt;/&gt;</a>
-  </div>
-</div>
-<div class="mkapi-docstring">
-<div class="mkapi-section">
-      <div class="mkapi-section-body"><p>Same as in BaseServer but as a thread.</p>
-<p>In addition, exception handling is done here.</p></div>
-    </div>
-  </div>
-
-</div>
-    </div>
-  
-    <div class="mkapi-member">
-      <div class="mkapi-node" id="socketserver.ThreadingMixIn.process_request">
-<div class='mkapi-object-container'>
-  <div class="mkapi-object method code">
-    <div class="mkapi-object-kind method">method</div>
-    <h3 id="socketserverthreadingmixinprocess_request" class="mkapi-object-body method"><code class="mkapi-object-name">process_request</code><code class="mkapi-object-parenthesis">(</code><code class="mkapi-object-signature">request</code>, <code class="mkapi-object-signature">client_address</code><code class="mkapi-object-parenthesis">)</code></h3>
-  </div>
-  <div class="mkapi-src-link">
-    <a class="mkapi-src-link" href="../source/socketserver/#socketserver.ThreadingMixIn.process_request" title="Source for socketserver.ThreadingMixIn.process_request">&lt;/&gt;</a>
-  </div>
-</div>
-<div class="mkapi-docstring">
-<div class="mkapi-section">
-      <div class="mkapi-section-body"><p>Start a new thread to process the request.</p></div>
     </div>
   </div>
 

@@ -327,20 +327,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../htcollector.Graph/" class="md-nav__link">
-        htcollector.Graph
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../htcollector.Database/" class="md-nav__link">
         htcollector.Database
       </a>
@@ -435,7 +421,7 @@
 <span class="c1">#  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,</span>
 <span class="c1">#  MA 02110-1301, USA.</span>
 <span class="c1">#</span>
-<span class="c1">#  version: 20220819120703</span>
+<span class="c1">#  version: 20220828130742</span>
 
 <span class="kn">from</span> <span class="nn">json</span> <span class="kn">import</span> <span class="n">dumps</span>
 <span class="kn">import</span> <span class="nn">mimetypes</span>
@@ -445,11 +431,12 @@
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
 <span class="kn">from</span> <span class="nn">dateutil</span> <span class="kn">import</span> <span class="n">tz</span>
 <span class="kn">from</span> <span class="nn">http</span> <span class="kn">import</span> <span class="n">HTTPStatus</span>
-<span class="kn">from</span> <span class="nn">http.server</span> <span class="kn">import</span> <span class="n">BaseHTTPRequestHandler</span><span class="p">,</span> <span class="n">ThreadingHTTPServer</span>
+<span class="kn">from</span> <span class="nn">http.server</span> <span class="kn">import</span> <span class="n">BaseHTTPRequestHandler</span><span class="p">,</span> <span class="n">HTTPServer</span>
+<span class="kn">from</span> <span class="nn">urllib.parse</span> <span class="kn">import</span> <span class="n">urlparse</span><span class="p">,</span> <span class="n">quote</span><span class="p">,</span> <span class="n">unquote_plus</span><span class="p">,</span> <span class="n">parse_qs</span>
+<span class="kn">import</span> <span class="nn">cgi</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 
 <span class="kn">from</span> <span class="nn">.Database</span> <span class="kn">import</span> <span class="n">Measurement</span>
-<span class="kn">from</span> <span class="nn">.Graph</span> <span class="kn">import</span> <span class="n">graph</span>
 <span class="kn">from</span> <span class="nn">.Utils</span> <span class="kn">import</span> <span class="n">DatetimeEncoder</span>
 
 
@@ -466,10 +453,6 @@
                 <span class="sa">r</span><span class="s2">&quot;^/sensorlog\?hum=(?P&lt;humidity&gt;\d+(\.\d+)?)\&amp;temp=(?P&lt;temperature&gt;\d+(\.\d+)?)\&amp;id=(?P&lt;stationid&gt;[a-z01-9-]+)$&quot;</span><span class="p">,</span>
                 <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">,</span>
             <span class="p">)</span>
-            <span class="n">graphpattern</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
-                <span class="sa">r</span><span class="s2">&quot;^/graph\?id=(?P&lt;stationid&gt;[a-z01-9-]+)$&quot;</span><span class="p">,</span>
-                <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">,</span>
-            <span class="p">)</span>
             <span class="n">htmlpattern</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
                 <span class="sa">r</span><span class="s2">&quot;^/html(\?id=(?P&lt;stationid&gt;[a-z01-9-]+))?$&quot;</span><span class="p">,</span>
                 <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">,</span>
@@ -484,13 +467,35 @@
                 <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="n">namespattern</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
-                <span class="sa">r</span><span class="s2">&quot;^(/name\?id=(?P&lt;stationid&gt;[a-z01-9-]+)\&amp;name=(?P&lt;name&gt;([a-z01-9-]|\s)+))|(/names)$&quot;</span><span class="p">,</span>
+                <span class="sa">r</span><span class="s2">&quot;^/names$&quot;</span><span class="p">,</span>
+                <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">updatenamepattern</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
+                <span class="sa">r</span><span class="s2">&quot;^/name$&quot;</span><span class="p">,</span>
                 <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="n">staticpattern</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
-                <span class="sa">r</span><span class="s2">&quot;^/static/(?P&lt;resource&gt;.+)$&quot;</span><span class="p">,</span>
+                <span class="sa">r</span><span class="s2">&quot;^(/static/(?P&lt;resource&gt;.*))|/$&quot;</span><span class="p">,</span>
                 <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">,</span>
             <span class="p">)</span>
+            <span class="n">faviconpattern</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^/favicon.ico$&quot;</span><span class="p">)</span>
+
+            <span class="k">def</span> <span class="nf">send_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+                <span class="sd">&quot;&quot;&quot;Add the response header to the headers buffer and log the</span>
+<span class="sd">                response code.</span>
+
+<span class="sd">                Overridden to leave out Server header (leaks information)</span>
+<span class="sd">                &quot;&quot;&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log_request</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">send_response_only</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+                <span class="c1"># self.send_header(&#39;Server&#39;, self.version_string())</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">send_header</span><span class="p">(</span><span class="s2">&quot;Date&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">date_time_string</span><span class="p">())</span>
+
+            <span class="nd">@staticmethod</span>
+            <span class="k">def</span> <span class="nf">checkPath</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">path</span><span class="o">.</span><span class="n">parts</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">p</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="s2">&quot;..&quot;</span><span class="p">}:</span>
+                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;relative paths are forbidden&quot;</span><span class="p">)</span>
 
             <span class="nd">@staticmethod</span>
             <span class="k">def</span> <span class="nf">getTimeseries</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">stationid</span><span class="p">):</span>
@@ -501,9 +506,31 @@
                     <span class="n">mtime</span> <span class="k">if</span> <span class="n">mtime</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">mark</span><span class="p">,</span>
                 <span class="p">)</span>
 
+            <span class="k">def</span> <span class="nf">common_headers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+                <span class="s2">&quot;the checksum is for the inline script in the updatename.html&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">send_header</span><span class="p">(</span>
+                    <span class="s2">&quot;Content-Security-Policy&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;default-src &#39;self&#39;; script-src &#39;self&#39; https://cdn.jsdelivr.net/npm/ &#39;sha256-m/VYsp+J+CFMn+MvBg+XMDwm67RMydRIm5ltf4j4nRk=&#39;; object-src &#39;none&#39;; base-uri &#39;self&#39;; frame-ancestors &#39;self&#39;;&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">send_header</span><span class="p">(</span><span class="s2">&quot;X-Content-Type-Options&quot;</span><span class="p">,</span> <span class="s2">&quot;nosniff&quot;</span><span class="p">)</span>
+
             <span class="k">def</span> <span class="nf">do_GET</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
                 <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
                 <span class="k">try</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">faviconpattern</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">):</span>
+                        <span class="n">filepath</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">static_directory</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;favicon.ico&quot;</span>
+                        <span class="n">mime_type</span> <span class="o">=</span> <span class="n">mimetypes</span><span class="o">.</span><span class="n">guess_type</span><span class="p">(</span><span class="n">filepath</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                        <span class="k">try</span><span class="p">:</span>
+                            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                                <span class="n">b</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">send_response</span><span class="p">(</span><span class="n">HTTPStatus</span><span class="o">.</span><span class="n">OK</span><span class="p">)</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">send_header</span><span class="p">(</span><span class="s2">&quot;Content-type&quot;</span><span class="p">,</span> <span class="n">mime_type</span><span class="p">)</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">send_header</span><span class="p">(</span><span class="s2">&quot;Content-Length&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">b</span><span class="p">)))</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">end_headers</span><span class="p">()</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">wfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+                                <span class="k">return</span>
+                        <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">send_response</span><span class="p">(</span><span class="n">HTTPStatus</span><span class="o">.</span><span class="n">NOT_FOUND</span><span class="p">)</span>
                     <span class="k">if</span> <span class="n">m</span> <span class="o">:=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">querypattern</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">):</span>
                         <span class="n">measurement</span> <span class="o">=</span> <span class="n">Measurement</span><span class="p">(</span>
                             <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s2">&quot;stationid&quot;</span><span class="p">),</span>
@@ -512,19 +539,6 @@
                         <span class="p">)</span>
                         <span class="n">db</span><span class="o">.</span><span class="n">storeMeasurement</span><span class="p">(</span><span class="n">measurement</span><span class="p">)</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">send_response</span><span class="p">(</span><span class="n">HTTPStatus</span><span class="o">.</span><span class="n">OK</span><span class="p">)</span>
-                    <span class="k">elif</span> <span class="n">m</span> <span class="o">:=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">graphpattern</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">):</span>
-                        <span class="n">now</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">tz</span><span class="o">=</span><span class="n">tz</span><span class="o">.</span><span class="n">tzlocal</span><span class="p">())</span>
-                        <span class="n">yesterday</span> <span class="o">=</span> <span class="n">now</span> <span class="o">-</span> <span class="n">timedelta</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-                        <span class="n">f</span> <span class="o">=</span> <span class="n">IO</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
-                        <span class="n">graph</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s2">&quot;stationid&quot;</span><span class="p">),</span> <span class="n">yesterday</span><span class="p">,</span> <span class="n">now</span><span class="p">)</span>
-                        <span class="n">png</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">send_response</span><span class="p">(</span><span class="n">HTTPStatus</span><span class="o">.</span><span class="n">OK</span><span class="p">)</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">send_header</span><span class="p">(</span><span class="s2">&quot;Content-type&quot;</span><span class="p">,</span> <span class="s2">&quot;image/png&quot;</span><span class="p">)</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">send_header</span><span class="p">(</span><span class="s2">&quot;Content-Length&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">png</span><span class="p">)))</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">end_headers</span><span class="p">()</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">wfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">png</span><span class="p">)</span>
-                        <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-                        <span class="k">return</span>
                     <span class="k">elif</span> <span class="n">m</span> <span class="o">:=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">htmlpattern</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">):</span>
                         <span class="n">ms</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">retrieveLastMeasurement</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s2">&quot;stationid&quot;</span><span class="p">))</span>
                         <span class="n">mdivs</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
@@ -558,6 +572,7 @@
                         <span class="bp">self</span><span class="o">.</span><span class="n">send_response</span><span class="p">(</span><span class="n">HTTPStatus</span><span class="o">.</span><span class="n">OK</span><span class="p">)</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">send_header</span><span class="p">(</span><span class="s2">&quot;Content-type&quot;</span><span class="p">,</span> <span class="s2">&quot;text/html&quot;</span><span class="p">)</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">send_header</span><span class="p">(</span><span class="s2">&quot;Content-Length&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">html</span><span class="p">)))</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">common_headers</span><span class="p">()</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">end_headers</span><span class="p">()</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">wfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">html</span><span class="p">)</span>
                         <span class="k">return</span>
@@ -604,6 +619,7 @@
                         <span class="bp">self</span><span class="o">.</span><span class="n">send_response</span><span class="p">(</span><span class="n">HTTPStatus</span><span class="o">.</span><span class="n">OK</span><span class="p">)</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">send_header</span><span class="p">(</span><span class="s2">&quot;Content-type&quot;</span><span class="p">,</span> <span class="s2">&quot;text/html&quot;</span><span class="p">)</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">send_header</span><span class="p">(</span><span class="s2">&quot;Content-Length&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">html</span><span class="p">)))</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">common_headers</span><span class="p">()</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">end_headers</span><span class="p">()</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">wfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">html</span><span class="p">)</span>
                         <span class="k">return</span>
@@ -634,17 +650,15 @@
                         <span class="bp">self</span><span class="o">.</span><span class="n">send_response</span><span class="p">(</span><span class="n">HTTPStatus</span><span class="o">.</span><span class="n">OK</span><span class="p">)</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">send_header</span><span class="p">(</span><span class="s2">&quot;Content-type&quot;</span><span class="p">,</span> <span class="s2">&quot;application/json&quot;</span><span class="p">)</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">send_header</span><span class="p">(</span><span class="s2">&quot;Content-Length&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">json</span><span class="p">)))</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">common_headers</span><span class="p">()</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">end_headers</span><span class="p">()</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">wfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">json</span><span class="p">)</span>
                         <span class="k">return</span>
                     <span class="k">elif</span> <span class="n">m</span> <span class="o">:=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">namespattern</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">):</span>
-                        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;/names&quot;</span><span class="p">):</span>
-                            <span class="n">stationid</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s2">&quot;stationid&quot;</span><span class="p">)</span>
-                            <span class="n">name</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">)</span>
-                            <span class="n">result</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">names</span><span class="p">(</span><span class="n">stationid</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
                         <span class="n">names</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">names</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">)</span>
                         <span class="n">names</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-                            <span class="sa">f</span><span class="s2">&quot;&lt;tr&gt;&lt;td&gt;</span><span class="si">{</span><span class="n">n</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&lt;/td&gt;&lt;td&gt;</span><span class="si">{</span><span class="n">n</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&lt;/td&gt;&lt;/tr&gt;&quot;</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">names</span>
+                            <span class="sa">f</span><span class="s1">&#39;&lt;tr&gt;&lt;td&gt;</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s1">&lt;/td&gt;&lt;td&gt;</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s1">&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;/static/updatename.html?id=</span><span class="si">{</span><span class="n">quote</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="si">}</span><span class="s1">&amp;name=</span><span class="si">{</span><span class="n">quote</span><span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="si">}</span><span class="s1">&quot;&gt;Change&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;&#39;</span>
+                            <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">names</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
                         <span class="p">)</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">send_response</span><span class="p">(</span><span class="n">HTTPStatus</span><span class="o">.</span><span class="n">OK</span><span class="p">)</span>
                         <span class="n">html</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;&lt;html&gt;&lt;body&gt;</span>
@@ -653,11 +667,21 @@
 <span class="s2">                        &quot;&quot;&quot;</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">send_header</span><span class="p">(</span><span class="s2">&quot;Content-type&quot;</span><span class="p">,</span> <span class="s2">&quot;text/html&quot;</span><span class="p">)</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">send_header</span><span class="p">(</span><span class="s2">&quot;Content-Length&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">html</span><span class="p">)))</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">common_headers</span><span class="p">()</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">end_headers</span><span class="p">()</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">wfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">bytes</span><span class="p">(</span><span class="n">html</span><span class="p">,</span> <span class="s2">&quot;UTF-8&quot;</span><span class="p">))</span>
                         <span class="k">return</span>
                     <span class="k">elif</span> <span class="n">m</span> <span class="o">:=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">staticpattern</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">):</span>
-                        <span class="n">filepath</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">static_directory</span><span class="p">)</span> <span class="o">/</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s2">&quot;resource&quot;</span><span class="p">)</span>
+                        <span class="n">path</span> <span class="o">=</span> <span class="n">urlparse</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s2">&quot;resource&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">path</span>
+                        <span class="n">filepath</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">static_directory</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span>
+                            <span class="n">path</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span> <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">bytes</span> <span class="k">else</span> <span class="n">path</span>
+                        <span class="p">)</span>  <span class="c1"># TODO check encoding URLs are not UTF-8?</span>
+                        <span class="k">try</span><span class="p">:</span>
+                            <span class="n">InterceptorHandler</span><span class="o">.</span><span class="n">checkPath</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
+                        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">send_response_only</span><span class="p">(</span><span class="n">HTTPStatus</span><span class="o">.</span><span class="n">FORBIDDEN</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">filepath</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+                            <span class="n">filepath</span> <span class="o">/=</span> <span class="s2">&quot;index.html&quot;</span>
                         <span class="n">mime_type</span> <span class="o">=</span> <span class="n">mimetypes</span><span class="o">.</span><span class="n">guess_type</span><span class="p">(</span><span class="n">filepath</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
                         <span class="k">try</span><span class="p">:</span>
                             <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
@@ -665,22 +689,59 @@
                                 <span class="bp">self</span><span class="o">.</span><span class="n">send_response</span><span class="p">(</span><span class="n">HTTPStatus</span><span class="o">.</span><span class="n">OK</span><span class="p">)</span>
                                 <span class="bp">self</span><span class="o">.</span><span class="n">send_header</span><span class="p">(</span><span class="s2">&quot;Content-type&quot;</span><span class="p">,</span> <span class="n">mime_type</span><span class="p">)</span>
                                 <span class="bp">self</span><span class="o">.</span><span class="n">send_header</span><span class="p">(</span><span class="s2">&quot;Content-Length&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">b</span><span class="p">)))</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">common_headers</span><span class="p">()</span>
                                 <span class="bp">self</span><span class="o">.</span><span class="n">end_headers</span><span class="p">()</span>
                                 <span class="bp">self</span><span class="o">.</span><span class="n">wfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
                                 <span class="k">return</span>
                         <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">send_response</span><span class="p">(</span><span class="n">HTTPStatus</span><span class="o">.</span><span class="n">NOT_FOUND</span><span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">send_response</span><span class="p">(</span><span class="n">HTTPStatus</span><span class="o">.</span><span class="n">FORBIDDEN</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">send_response_only</span><span class="p">(</span><span class="n">HTTPStatus</span><span class="o">.</span><span class="n">FORBIDDEN</span><span class="p">)</span>
                 <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                     <span class="n">logging</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">send_response</span><span class="p">(</span><span class="n">HTTPStatus</span><span class="o">.</span><span class="n">INTERNAL_SERVER_ERROR</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">send_response_only</span><span class="p">(</span><span class="n">HTTPStatus</span><span class="o">.</span><span class="n">INTERNAL_SERVER_ERROR</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">end_headers</span><span class="p">()</span>
+
+            <span class="k">def</span> <span class="nf">do_POST</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">m</span> <span class="o">:=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">updatenamepattern</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">):</span>
+                    <span class="n">file_length</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Content-Length&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">keyvalues</span> <span class="o">=</span> <span class="n">parse_qs</span><span class="p">(</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">rfile</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">file_length</span><span class="p">),</span> <span class="n">max_num_fields</span><span class="o">=</span><span class="mi">2</span>
+                        <span class="p">)</span>  <span class="c1"># encoding is assumed to be UTF-8</span>
+                    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">send_response_only</span><span class="p">(</span><span class="n">HTTPStatus</span><span class="o">.</span><span class="n">BAD_REQUEST</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">end_headers</span><span class="p">()</span>
+                        <span class="k">return</span>
+                    <span class="n">stationid</span> <span class="o">=</span> <span class="n">keyvalues</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="p">[</span><span class="sa">b</span><span class="s2">&quot;&quot;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;UTF-8&quot;</span><span class="p">)</span>
+                    <span class="n">name</span> <span class="o">=</span> <span class="n">keyvalues</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="p">[</span><span class="sa">b</span><span class="s2">&quot;&quot;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;UTF-8&quot;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">stationid</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span> <span class="ow">or</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">send_response_only</span><span class="p">(</span><span class="n">HTTPStatus</span><span class="o">.</span><span class="n">BAD_REQUEST</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">end_headers</span><span class="p">()</span>
+                        <span class="k">return</span>
+                    <span class="n">names</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">names</span><span class="p">(</span><span class="n">stationid</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+                    <span class="c1"># TODO refactor duplicate code</span>
+                    <span class="n">names</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s1">&#39;&lt;tr&gt;&lt;td&gt;</span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s1">&lt;/td&gt;&lt;td&gt;</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s1">&lt;/td&gt;&lt;td&gt;&lt;a href=&quot;/static/updatename.html?id=</span><span class="si">{</span><span class="n">quote</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="si">}</span><span class="s1">&amp;name=</span><span class="si">{</span><span class="n">quote</span><span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="si">}</span><span class="s1">&quot;&gt;Change&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;&#39;</span>
+                        <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">names</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                    <span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">send_response</span><span class="p">(</span><span class="n">HTTPStatus</span><span class="o">.</span><span class="n">OK</span><span class="p">)</span>
+                    <span class="n">html</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;&lt;html&gt;&lt;body&gt;</span>
+<span class="s2">                    &lt;table&gt;</span><span class="si">{</span><span class="n">names</span><span class="si">}</span><span class="s2">&lt;/table&gt;</span>
+<span class="s2">                    &lt;/body&gt;&lt;/html&gt;</span>
+<span class="s2">                    &quot;&quot;&quot;</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">send_header</span><span class="p">(</span><span class="s2">&quot;Content-type&quot;</span><span class="p">,</span> <span class="s2">&quot;text/html&quot;</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">send_header</span><span class="p">(</span><span class="s2">&quot;Content-Length&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">html</span><span class="p">)))</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">common_headers</span><span class="p">()</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">end_headers</span><span class="p">()</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">wfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">bytes</span><span class="p">(</span><span class="n">html</span><span class="p">,</span> <span class="s2">&quot;UTF-8&quot;</span><span class="p">))</span>
+                    <span class="k">return</span>
 
         <span class="k">return</span> <span class="n">InterceptorHandler</span>
 
 
-<span class="k">class</span> <span class="nc">Interceptor</span><span class="p">(</span><span class="n">ThreadingHTTPServer</span><span class="p">):</span><span id="htcollector.Server.Interceptor"></span><a class="mkapi-docs-link" title="htcollector.Server.Interceptor" href="../../htcollector.Server/#htcollector.Server.Interceptor">DOCS</a>
+<span class="k">class</span> <span class="nc">Interceptor</span><span class="p">(</span><span class="n">HTTPServer</span><span class="p">):</span><span id="htcollector.Server.Interceptor"></span><a class="mkapi-docs-link" title="htcollector.Server.Interceptor" href="../../htcollector.Server/#htcollector.Server.Interceptor">DOCS</a>
     <span class="n">allow_reuse_address</span> <span class="o">=</span> <span class="kc">True</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">server_address</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">static_directory</span><span class="p">):</span>
