@@ -21,6 +21,7 @@
 
 import json
 from datetime import datetime, timedelta
+from re import sub
 
 
 class DatetimeEncoder(json.JSONEncoder):
@@ -31,3 +32,7 @@ class DatetimeEncoder(json.JSONEncoder):
             return str(obj)
         # Let the base class default method raise the TypeError
         return json.JSONEncoder.default(self, obj)
+
+
+def sanitize_braces(s):
+    return sub(r"(\{)\s*(\S+)\s*(\})", r"\1\2\3", s)

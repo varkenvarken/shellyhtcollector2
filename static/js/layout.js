@@ -40,7 +40,7 @@ function getGradient(ctx, chartArea) {
 function sparkline(ctx, stationid) {
     // extend the last measurement to now
     temperature_data = temperature_data_map[stationid];
-    last_point = temperature_data.slice(-1)[0]; // a slice returns an array
+    last_point = structuredClone(temperature_data.slice(-1))[0]; // a slice returns an shallow array
     last_point.timestamp = new Date().toISOString();
     temperature_data.push(last_point);
 

@@ -17,7 +17,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220828170112
+#  version: 20220902125110
 
 from json import dumps
 import mimetypes
@@ -33,7 +33,7 @@ import cgi
 import logging
 
 from .Database import Measurement
-from .Utils import DatetimeEncoder
+from .Utils import DatetimeEncoder, sanitize_braces
 
 
 class InterceptorHandlerFactory:
@@ -103,10 +103,10 @@ class InterceptorHandlerFactory:
                 )
 
             def common_headers(self):
-                "the checksum is for the inline script in the updatename.html"
+                """we only allow external scripts from jsdelivr"""
                 self.send_header(
                     "Content-Security-Policy",
-                    "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net/npm/ 'sha256-m/VYsp+J+CFMn+MvBg+XMDwm67RMydRIm5ltf4j4nRk='; object-src 'none'; base-uri 'self'; frame-ancestors 'self';",
+                    "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net/npm/ 'unsafe-inline'; object-src 'none'; base-uri 'self'; frame-ancestors 'self';",
                 )
                 self.send_header("X-Content-Type-Options", "nosniff")
 
@@ -185,33 +185,21 @@ class InterceptorHandlerFactory:
                             for s in last_measurements
                         }
                         temperature_data_map = dumps(time_series, cls=DatetimeEncoder)
-                        html = bytes(
-                            """<html>
-<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js" integrity="sha256-+8RZJua0aEWg+QVVKg4LEzEEm/8RFez5Tb4JBNiV5xA=" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="refresh" content="300">
-    <title>Indoor temperature</title>
-    <link href="static/css/stylesheet.css" rel="stylesheet">
-</head>
-<body>
-    <div id="measurements"></div>
-</body>
-<script>
-    station_data = """
-                            + station_data
-                            + """;
-    temperature_data_map = """
-                            + temperature_data_map
-                            + """;
-</script>
-<script src="static/js/layout.js"></script>
-</html>
-""",
-                            "UTF-8",
-                        )
+
+                        filepath = Path(static_directory) / "all.html"
+                        try:
+                            with open(filepath, "rb") as f:
+                                html = f.read().decode()
+                                html = sanitize_braces(html)
+                                logging.info(html)
+                            html = html.format(
+                                station_data=station_data,
+                                temperature_data_map=temperature_data_map,
+                            )
+                        except FileNotFoundError:
+                            self.send_response(HTTPStatus.NOT_FOUND)
+
+                        html = bytes(html, "UTF-8")
                         self.send_response(HTTPStatus.OK)
                         self.send_header("Content-type", "text/html")
                         self.send_header("Content-Length", str(len(html)))
