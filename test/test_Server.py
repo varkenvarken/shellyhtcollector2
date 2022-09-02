@@ -167,32 +167,6 @@ class TestInterceptor:
                         print(start, r)
                         assert len(r) == 0
 
-    def test_GET_HTML_html(self, database, capsys):
-        stationid = "htmlid-123456"
-        interceptorhandler = InterceptorHandlerFactory.getHandler(database, "./static")
-
-        database.names(
-            stationid, "htmlroom1"
-        )  # without a stationid mapping we never get anything back
-        start = datetime.now()
-        database.storeMeasurement(Measurement(stationid, 10, 40))
-        with mock.patch.object(interceptorhandler, "finish", finish):
-            with mock.patch.object(
-                interceptorhandler, "date_time_string", date_time_string
-            ):
-                with mock.patch.object(
-                    interceptorhandler, "version_string", version_string
-                ):
-                    with mock.patch.object(interceptorhandler, "wbufsize", lambda: 1):
-                        start = datetime.now()
-                        request = MockRequest(b"/html")
-                        ihinstance = interceptorhandler(
-                            request, ("127.0.0.1", 12345), "testserver.example.org"
-                        )
-                        captured = capsys.readouterr()
-                        print(captured.out)
-                        assert ihinstance.wfile.getvalue()[:15] == b"HTTP/1.0 200 OK"
-
     def test_GET_HTML_all(self, database, capsys):
         stationid = "htmlid-123456"
         interceptorhandler = InterceptorHandlerFactory.getHandler(database, "./static")
@@ -212,34 +186,6 @@ class TestInterceptor:
                     with mock.patch.object(interceptorhandler, "wbufsize", lambda: 1):
                         start = datetime.now()
                         request = MockRequest(b"/all")
-                        ihinstance = interceptorhandler(
-                            request, ("127.0.0.1", 12345), "testserver.example.org"
-                        )
-                        captured = capsys.readouterr()
-                        print(captured.out)
-                        assert ihinstance.wfile.getvalue()[:15] == b"HTTP/1.0 200 OK"
-
-    def test_GET_HTML_specific(self, database, capsys):
-        stationid = "htmlid-333333"
-        interceptorhandler = InterceptorHandlerFactory.getHandler(database, "./static")
-
-        database.names(
-            stationid, "htmlroom2"
-        )  # without a stationid mapping we never get anything back
-        start = datetime.now()
-        database.storeMeasurement(Measurement(stationid, 10, 40))
-        with mock.patch.object(interceptorhandler, "finish", finish):
-            with mock.patch.object(
-                interceptorhandler, "date_time_string", date_time_string
-            ):
-                with mock.patch.object(
-                    interceptorhandler, "version_string", version_string
-                ):
-                    with mock.patch.object(interceptorhandler, "wbufsize", lambda: 1):
-                        start = datetime.now()
-                        request = MockRequest(
-                            b"/html?id=%s" % bytes(stationid, "UTF-8")
-                        )
                         ihinstance = interceptorhandler(
                             request, ("127.0.0.1", 12345), "testserver.example.org"
                         )

@@ -1,46 +1,51 @@
-                        .body {
-                            width: 100%;
-                        }
+#footer {
+    float: left;
+    clear: both;
+}
 
-                        .measurements {
-                            width: 90%;
-                        }
+.body {
+    width: 100%;
+}
 
-                        .measurement {
-                            float: left;
-                            width: 200px;
-                        }
+.measurements {
+    width: 90%;
+}
 
-                        .station {
-                            float: left;
-                            font-size: 16pt;
-                            padding-left: 10px;
-                        }
+.measurement {
+    float: left;
+    width: 200px;
+}
 
-                        .time {
-                            float: left;
-                            font-size: 12pt;
-                            padding-left: 10px;
-                        }
+.station {
+    float: left;
+    font-size: 16pt;
+    padding-left: 10px;
+}
 
-                        .temp {
-                            float: left;
-                            clear: both;
-                            font-size: 40pt;
-                        }
+.time {
+    float: left;
+    font-size: 12pt;
+    padding-left: 10px;
+}
 
-                        .degrees {
-                            font-size: 20pt;
-                            vertical-align: top;
-                        }
+.temp {
+    float: left;
+    clear: both;
+    font-size: 40pt;
+}
 
-                        .hum {
-                            float: left;
-                            font-size: 12pt;
-                            padding-left: 10px;
-                            padding-top: 37px;
-                        }
+.degrees {
+    font-size: 20pt;
+    vertical-align: top;
+}
 
-                        .late {
-                            background-color: red;
-                        }
+.hum {
+    float: left;
+    font-size: 12pt;
+    padding-left: 10px;
+    padding-top: 37px;
+}
+
+.late {
+    background-color: red;
+}

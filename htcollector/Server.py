@@ -17,7 +17,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220902125110
+#  version: 20220902142722
 
 from json import dumps
 import mimetypes
@@ -135,43 +135,6 @@ class InterceptorHandlerFactory:
                         )
                         db.storeMeasurement(measurement)
                         self.send_response(HTTPStatus.OK)
-                    elif m := re.match(self.htmlpattern, self.path):
-                        ms = db.retrieveLastMeasurement(m.group("stationid"))
-                        mdivs = "\n".join(
-                            f"""
-                            <div class="measurement{' late' if m['deltat'].total_seconds()>24*3600 else ''}" id="{m["stationid"]}">
-                            <div class="station">{m["name"]}</div>
-                            <div class="time" data-time="{m["time"]}"></div>
-                            <div class="temp">{m["temperature"]:.1f}<span class="degrees">°C</span></div>
-                            <div class="hum">{m["humidity"]:.0f}<span class=percent>%</span></div>
-                            </div>"""
-                            for m in ms
-                        )
-                        html = bytes(
-                            f"""
-<html>
-<head>
-<meta charset="UTF-8">
-<meta http-equiv="refresh" content="300">
-<title>Temperatuur binnen</title>
-<link href="static/css/stylesheet.css" rel="stylesheet"></head>
-<body>
-<div class="measurements">
-{mdivs}
-</div>
-</body>
-<script>document.querySelectorAll("[data-time]").forEach(function(e){{d=new Date(e.getAttribute("data-time"));e.innerHTML=d.getHours() + ":" + d.getMinutes().toString().padStart(2, '0')}})</script>
-</html>
-                        """,
-                            "UTF-8",
-                        )
-                        self.send_response(HTTPStatus.OK)
-                        self.send_header("Content-type", "text/html")
-                        self.send_header("Content-Length", str(len(html)))
-                        self.common_headers()
-                        self.end_headers()
-                        self.wfile.write(html)
-                        return
                     elif m := re.match(self.allpattern, self.path):
                         last_measurements = db.retrieveLastMeasurement()
                         station_data = dumps(
@@ -195,6 +158,7 @@ class InterceptorHandlerFactory:
                             html = html.format(
                                 station_data=station_data,
                                 temperature_data_map=temperature_data_map,
+                                timestamp=str(datetime.now()),
                             )
                         except FileNotFoundError:
                             self.send_response(HTTPStatus.NOT_FOUND)
