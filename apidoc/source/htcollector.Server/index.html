@@ -421,7 +421,7 @@
 <span class="c1">#  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,</span>
 <span class="c1">#  MA 02110-1301, USA.</span>
 <span class="c1">#</span>
-<span class="c1">#  version: 20220828130742</span>
+<span class="c1">#  version: 20220902142722</span>
 
 <span class="kn">from</span> <span class="nn">json</span> <span class="kn">import</span> <span class="n">dumps</span>
 <span class="kn">import</span> <span class="nn">mimetypes</span>
@@ -431,13 +431,13 @@
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
 <span class="kn">from</span> <span class="nn">dateutil</span> <span class="kn">import</span> <span class="n">tz</span>
 <span class="kn">from</span> <span class="nn">http</span> <span class="kn">import</span> <span class="n">HTTPStatus</span>
-<span class="kn">from</span> <span class="nn">http.server</span> <span class="kn">import</span> <span class="n">BaseHTTPRequestHandler</span><span class="p">,</span> <span class="n">HTTPServer</span>
+<span class="kn">from</span> <span class="nn">http.server</span> <span class="kn">import</span> <span class="n">BaseHTTPRequestHandler</span><span class="p">,</span> <span class="n">HTTPServer</span><span class="p">,</span> <span class="n">ThreadingHTTPServer</span>
 <span class="kn">from</span> <span class="nn">urllib.parse</span> <span class="kn">import</span> <span class="n">urlparse</span><span class="p">,</span> <span class="n">quote</span><span class="p">,</span> <span class="n">unquote_plus</span><span class="p">,</span> <span class="n">parse_qs</span>
 <span class="kn">import</span> <span class="nn">cgi</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 
 <span class="kn">from</span> <span class="nn">.Database</span> <span class="kn">import</span> <span class="n">Measurement</span>
-<span class="kn">from</span> <span class="nn">.Utils</span> <span class="kn">import</span> <span class="n">DatetimeEncoder</span>
+<span class="kn">from</span> <span class="nn">.Utils</span> <span class="kn">import</span> <span class="n">DatetimeEncoder</span><span class="p">,</span> <span class="n">sanitize_braces</span>
 
 
 <span class="k">class</span> <span class="nc">InterceptorHandlerFactory</span><span class="p">:</span><span id="htcollector.Server.InterceptorHandlerFactory"></span><a class="mkapi-docs-link" title="htcollector.Server.InterceptorHandlerFactory" href="../../htcollector.Server/#htcollector.Server.InterceptorHandlerFactory">DOCS</a>
@@ -507,10 +507,10 @@
                 <span class="p">)</span>
 
             <span class="k">def</span> <span class="nf">common_headers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-                <span class="s2">&quot;the checksum is for the inline script in the updatename.html&quot;</span>
+                <span class="sd">&quot;&quot;&quot;we only allow external scripts from jsdelivr&quot;&quot;&quot;</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">send_header</span><span class="p">(</span>
                     <span class="s2">&quot;Content-Security-Policy&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;default-src &#39;self&#39;; script-src &#39;self&#39; https://cdn.jsdelivr.net/npm/ &#39;sha256-m/VYsp+J+CFMn+MvBg+XMDwm67RMydRIm5ltf4j4nRk=&#39;; object-src &#39;none&#39;; base-uri &#39;self&#39;; frame-ancestors &#39;self&#39;;&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;default-src &#39;self&#39;; script-src &#39;self&#39; https://cdn.jsdelivr.net/npm/ &#39;unsafe-inline&#39;; object-src &#39;none&#39;; base-uri &#39;self&#39;; frame-ancestors &#39;self&#39;;&quot;</span><span class="p">,</span>
                 <span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">send_header</span><span class="p">(</span><span class="s2">&quot;X-Content-Type-Options&quot;</span><span class="p">,</span> <span class="s2">&quot;nosniff&quot;</span><span class="p">)</span>
 
@@ -539,43 +539,6 @@
                         <span class="p">)</span>
                         <span class="n">db</span><span class="o">.</span><span class="n">storeMeasurement</span><span class="p">(</span><span class="n">measurement</span><span class="p">)</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">send_response</span><span class="p">(</span><span class="n">HTTPStatus</span><span class="o">.</span><span class="n">OK</span><span class="p">)</span>
-                    <span class="k">elif</span> <span class="n">m</span> <span class="o">:=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">htmlpattern</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">):</span>
-                        <span class="n">ms</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">retrieveLastMeasurement</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s2">&quot;stationid&quot;</span><span class="p">))</span>
-                        <span class="n">mdivs</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-                            <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">                            &lt;div class=&quot;measurement</span><span class="si">{</span><span class="s1">&#39; late&#39;</span> <span class="k">if</span> <span class="n">m</span><span class="p">[</span><span class="s1">&#39;deltat&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span><span class="o">&gt;</span><span class="mi">24</span><span class="o">*</span><span class="mi">3600</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span><span class="si">}</span><span class="s2">&quot; id=&quot;</span><span class="si">{</span><span class="n">m</span><span class="p">[</span><span class="s2">&quot;stationid&quot;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;&gt;</span>
-<span class="s2">                            &lt;div class=&quot;station&quot;&gt;</span><span class="si">{</span><span class="n">m</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span><span class="si">}</span><span class="s2">&lt;/div&gt;</span>
-<span class="s2">                            &lt;div class=&quot;time&quot; data-time=&quot;</span><span class="si">{</span><span class="n">m</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;&gt;&lt;/div&gt;</span>
-<span class="s2">                            &lt;div class=&quot;temp&quot;&gt;</span><span class="si">{</span><span class="n">m</span><span class="p">[</span><span class="s2">&quot;temperature&quot;</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">&lt;span class=&quot;degrees&quot;&gt;°C&lt;/span&gt;&lt;/div&gt;</span>
-<span class="s2">                            &lt;div class=&quot;hum&quot;&gt;</span><span class="si">{</span><span class="n">m</span><span class="p">[</span><span class="s2">&quot;humidity&quot;</span><span class="p">]</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">&lt;span class=percent&gt;%&lt;/span&gt;&lt;/div&gt;</span>
-<span class="s2">                            &lt;/div&gt;&quot;&quot;&quot;</span>
-                            <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">ms</span>
-                        <span class="p">)</span>
-                        <span class="n">html</span> <span class="o">=</span> <span class="nb">bytes</span><span class="p">(</span>
-                            <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">&lt;html&gt;</span>
-<span class="s2">&lt;head&gt;</span>
-<span class="s2">&lt;meta charset=&quot;UTF-8&quot;&gt;</span>
-<span class="s2">&lt;meta http-equiv=&quot;refresh&quot; content=&quot;300&quot;&gt;</span>
-<span class="s2">&lt;title&gt;Temperatuur binnen&lt;/title&gt;</span>
-<span class="s2">&lt;link href=&quot;static/css/stylesheet.css&quot; rel=&quot;stylesheet&quot;&gt;&lt;/head&gt;</span>
-<span class="s2">&lt;body&gt;</span>
-<span class="s2">&lt;div class=&quot;measurements&quot;&gt;</span>
-<span class="si">{</span><span class="n">mdivs</span><span class="si">}</span><span class="s2"></span>
-<span class="s2">&lt;/div&gt;</span>
-<span class="s2">&lt;/body&gt;</span>
-<span class="s2">&lt;script&gt;document.querySelectorAll(&quot;[data-time]&quot;).forEach(function(e)</span><span class="se">{{</span><span class="s2">d=new Date(e.getAttribute(&quot;data-time&quot;));e.innerHTML=d.getHours() + &quot;:&quot; + d.getMinutes().toString().padStart(2, &#39;0&#39;)</span><span class="se">}}</span><span class="s2">)&lt;/script&gt;</span>
-<span class="s2">&lt;/html&gt;</span>
-<span class="s2">                        &quot;&quot;&quot;</span><span class="p">,</span>
-                            <span class="s2">&quot;UTF-8&quot;</span><span class="p">,</span>
-                        <span class="p">)</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">send_response</span><span class="p">(</span><span class="n">HTTPStatus</span><span class="o">.</span><span class="n">OK</span><span class="p">)</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">send_header</span><span class="p">(</span><span class="s2">&quot;Content-type&quot;</span><span class="p">,</span> <span class="s2">&quot;text/html&quot;</span><span class="p">)</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">send_header</span><span class="p">(</span><span class="s2">&quot;Content-Length&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">html</span><span class="p">)))</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">common_headers</span><span class="p">()</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">end_headers</span><span class="p">()</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">wfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">html</span><span class="p">)</span>
-                        <span class="k">return</span>
                     <span class="k">elif</span> <span class="n">m</span> <span class="o">:=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">allpattern</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">):</span>
                         <span class="n">last_measurements</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">retrieveLastMeasurement</span><span class="p">()</span>
                         <span class="n">station_data</span> <span class="o">=</span> <span class="n">dumps</span><span class="p">(</span>
@@ -589,33 +552,22 @@
                             <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">last_measurements</span>
                         <span class="p">}</span>
                         <span class="n">temperature_data_map</span> <span class="o">=</span> <span class="n">dumps</span><span class="p">(</span><span class="n">time_series</span><span class="p">,</span> <span class="bp">cls</span><span class="o">=</span><span class="n">DatetimeEncoder</span><span class="p">)</span>
-                        <span class="n">html</span> <span class="o">=</span> <span class="nb">bytes</span><span class="p">(</span>
-                            <span class="sd">&quot;&quot;&quot;&lt;html&gt;</span>
-<span class="sd">&lt;script src=&quot;https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js&quot; integrity=&quot;sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=&quot; crossorigin=&quot;anonymous&quot;&gt;&lt;/script&gt;</span>
-<span class="sd">&lt;script src=&quot;https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js&quot; integrity=&quot;sha256-+8RZJua0aEWg+QVVKg4LEzEEm/8RFez5Tb4JBNiV5xA=&quot; crossorigin=&quot;anonymous&quot;&gt;&lt;/script&gt;</span>
-<span class="sd">&lt;script src=&quot;https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js&quot;&gt;&lt;/script&gt;</span>
-<span class="sd">&lt;head&gt;</span>
-<span class="sd">    &lt;meta charset=&quot;UTF-8&quot;&gt;</span>
-<span class="sd">    &lt;meta http-equiv=&quot;refresh&quot; content=&quot;300&quot;&gt;</span>
-<span class="sd">    &lt;title&gt;Indoor temperature&lt;/title&gt;</span>
-<span class="sd">    &lt;link href=&quot;static/css/stylesheet.css&quot; rel=&quot;stylesheet&quot;&gt;</span>
-<span class="sd">&lt;/head&gt;</span>
-<span class="sd">&lt;body&gt;</span>
-<span class="sd">    &lt;div id=&quot;measurements&quot;&gt;&lt;/div&gt;</span>
-<span class="sd">&lt;/body&gt;</span>
-<span class="sd">&lt;script&gt;</span>
-<span class="sd">    station_data = &quot;&quot;&quot;</span>
-                            <span class="o">+</span> <span class="n">station_data</span>
-                            <span class="o">+</span> <span class="s2">&quot;&quot;&quot;;</span>
-<span class="s2">    temperature_data_map = &quot;&quot;&quot;</span>
-                            <span class="o">+</span> <span class="n">temperature_data_map</span>
-                            <span class="o">+</span> <span class="s2">&quot;&quot;&quot;;</span>
-<span class="s2">&lt;/script&gt;</span>
-<span class="s2">&lt;script src=&quot;static/js/layout.js&quot;&gt;&lt;/script&gt;</span>
-<span class="s2">&lt;/html&gt;</span>
-<span class="s2">&quot;&quot;&quot;</span><span class="p">,</span>
-                            <span class="s2">&quot;UTF-8&quot;</span><span class="p">,</span>
-                        <span class="p">)</span>
+
+                        <span class="n">filepath</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">static_directory</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;all.html&quot;</span>
+                        <span class="k">try</span><span class="p">:</span>
+                            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                                <span class="n">html</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
+                                <span class="n">html</span> <span class="o">=</span> <span class="n">sanitize_braces</span><span class="p">(</span><span class="n">html</span><span class="p">)</span>
+                                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">html</span><span class="p">)</span>
+                            <span class="n">html</span> <span class="o">=</span> <span class="n">html</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                                <span class="n">station_data</span><span class="o">=</span><span class="n">station_data</span><span class="p">,</span>
+                                <span class="n">temperature_data_map</span><span class="o">=</span><span class="n">temperature_data_map</span><span class="p">,</span>
+                                <span class="n">timestamp</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()),</span>
+                            <span class="p">)</span>
+                        <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">send_response</span><span class="p">(</span><span class="n">HTTPStatus</span><span class="o">.</span><span class="n">NOT_FOUND</span><span class="p">)</span>
+
+                        <span class="n">html</span> <span class="o">=</span> <span class="nb">bytes</span><span class="p">(</span><span class="n">html</span><span class="p">,</span> <span class="s2">&quot;UTF-8&quot;</span><span class="p">)</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">send_response</span><span class="p">(</span><span class="n">HTTPStatus</span><span class="o">.</span><span class="n">OK</span><span class="p">)</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">send_header</span><span class="p">(</span><span class="s2">&quot;Content-type&quot;</span><span class="p">,</span> <span class="s2">&quot;text/html&quot;</span><span class="p">)</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">send_header</span><span class="p">(</span><span class="s2">&quot;Content-Length&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">html</span><span class="p">)))</span>
@@ -741,7 +693,7 @@
         <span class="k">return</span> <span class="n">InterceptorHandler</span>
 
 
-<span class="k">class</span> <span class="nc">Interceptor</span><span class="p">(</span><span class="n">HTTPServer</span><span class="p">):</span><span id="htcollector.Server.Interceptor"></span><a class="mkapi-docs-link" title="htcollector.Server.Interceptor" href="../../htcollector.Server/#htcollector.Server.Interceptor">DOCS</a>
+<span class="k">class</span> <span class="nc">Interceptor</span><span class="p">(</span><span class="n">ThreadingHTTPServer</span><span class="p">):</span><span id="htcollector.Server.Interceptor"></span><a class="mkapi-docs-link" title="htcollector.Server.Interceptor" href="../../htcollector.Server/#htcollector.Server.Interceptor">DOCS</a>
     <span class="n">allow_reuse_address</span> <span class="o">=</span> <span class="kc">True</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">server_address</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">static_directory</span><span class="p">):</span>

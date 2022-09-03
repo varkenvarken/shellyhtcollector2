@@ -257,6 +257,88 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#installation-and-use" class="md-nav__link">
+    Installation and use
+  </a>
+  
+    <nav class="md-nav" aria-label="Installation and use">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#installation-step-by-step" class="md-nav__link">
+    Installation: Step by step
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-note-on-security" class="md-nav__link">
+    A note on security
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#installation-as-a-library" class="md-nav__link">
+    Installation as a library
+  </a>
+  
+    <nav class="md-nav" aria-label="Installation as a library">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#install-the-mariadb-connector-for-python" class="md-nav__link">
+    Install the mariadb connector for Python
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#install-the-package" class="md-nav__link">
+    Install the package
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#running-the-server" class="md-nav__link">
+    Running the server
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#api-documentation" class="md-nav__link">
+    API documentation
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architecture-overview" class="md-nav__link">
+    Architecture overview
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementation-details" class="md-nav__link">
+    Implementation details
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -436,6 +518,88 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#installation-and-use" class="md-nav__link">
+    Installation and use
+  </a>
+  
+    <nav class="md-nav" aria-label="Installation and use">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#installation-step-by-step" class="md-nav__link">
+    Installation: Step by step
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-note-on-security" class="md-nav__link">
+    A note on security
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#installation-as-a-library" class="md-nav__link">
+    Installation as a library
+  </a>
+  
+    <nav class="md-nav" aria-label="Installation as a library">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#install-the-mariadb-connector-for-python" class="md-nav__link">
+    Install the mariadb connector for Python
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#install-the-package" class="md-nav__link">
+    Install the package
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#running-the-server" class="md-nav__link">
+    Running the server
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#api-documentation" class="md-nav__link">
+    API documentation
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architecture-overview" class="md-nav__link">
+    Architecture overview
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementation-details" class="md-nav__link">
+    Implementation details
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -458,25 +622,45 @@
 <img alt="Python versions" src="https://img.shields.io/pypi/pyversions/htcollector" /></p>
 <h1 id="htcollector">htcollector</h1>
 <p>Gather incoming temperature and humidity updates from a small swarm of Shellyht devices.</p>
+<p><a href="#intro">Intro</a></p>
+<p><a href="#installation-and-use">Installation and use</a></p>
+<p><a href="#a-note-on-security">Security</a></p>
+<p><a href="#installation-as-a-library">Installation as a library</a></p>
+<p><a href="#api-documentation">API Documentation</a></p>
 <h2 id="intro">Intro</h2>
 <p>Shelly HT devices can be configured to send their measurements to a configurable server.
 The server is called using a simple HTTP GET request like</p>
 <p><code>http://mymachine:8083/sensorlog?hum=24&amp;temp=42.38&amp;id=shellyht-1234FA</code></p>
 <p>where the part <code>http://mymachine:8083/sensorlog</code> is something you configure in the sensor itself.</p>
-<p><code>htcollector</code> is a solution that intercepts these requests and logs the data in a database.
-It also provides means to associate meaningful labels with the station-ids and generate html,
-json or a png image with the latest measurements.</p>
-<h1 id="installation-and-use">Installation and use</h1>
-<p>'htcollector` is a Python package that can be used to implement your own server
-that intercepts messages from Shelly HT devices or you can use the default server implementation
-that is part of the package.</p>
-<p>If you are already working with Docker things are even simpler as the two necessary images are provided
-as part of this project and available on
-<a href="https://github.com/varkenvarken?tab=packages&amp;repo_name=shellyhtcollector2">the GitHub Container Registry</a></p>
-<h2 id="easy-installation-using-docker">Easy installation using Docker</h2>
-<p><code>htcollector</code> is provided as an easy to use <a href="https://github.com/varkenvarken?tab=packages&amp;repo_name=shellyhtcollector2">Docker solution</a> too:</p>
-<p>You can simply download just a file with environment variables and a docker compose file and start
-that up with <code>docker compose</code> (watch the long curl lines!):</p>
+<p><code>htcollector</code> is a solution that processes these requests and logs the data in a database.
+It also provides means to associate meaningful labels with the station-ids and generate html or json data with the latest measurements.</p>
+<h2 id="installation-and-use">Installation and use</h2>
+<p><code>htcollector</code> is comes as <a href="https://github.com/varkenvarken?tab=packages&amp;repo_name=shellyhtcollector2">two Docker images</a> than can be run on your docker installation.</p>
+<p>To spin up a server you need to perform the following steps:</p>
+<ul>
+<li>
+<p>Download a Docker compose file and an environment file</p>
+<p>You can of course adapt these files to your needs</p>
+</li>
+<li>
+<p>Download and start your containers</p>
+<p>A simple <code>docker compose up</code> will take care of both</p>
+</li>
+<li>
+<p>Configure your Shelly HT devices to point to your server</p>
+<p>This is documented in the Shelly HT manual</p>
+</li>
+<li>
+<p>Associate names with the Shelly HT station ids</p>
+<p>So that you can more easily identify your Shelly HT devices</p>
+</li>
+</ul>
+<p>After this, you can access the most recent measurments on <code>http://myserver:8083/all</code> (where <code>myserver</code> is the name of the machine you have started the docker containers on)</p>
+<p>The steps are document in more detail in the following section.</p>
+<h3 id="installation-step-by-step">Installation: Step by step</h3>
+<p><code>htcollector</code> is provided as an easy to use <a href="https://github.com/varkenvarken?tab=packages&amp;repo_name=shellyhtcollector2">Docker solution</a>:</p>
+<p>You can simply download just a file with environment variables and a docker compose file and start that up with <code>docker compose</code>.
+In <code>bash</code> (on a a system with <code>curl</code> installed) that would look like (watch the long curl lines!):</p>
 <div class="highlight"><pre><span></span><code>mkdir htcollector-docker
 <span class="nb">cd</span> htcollector-docker
 mkdir docker
@@ -486,26 +670,31 @@ curl https://raw.githubusercontent.com/varkenvarken/shellyhtcollector2/master/do
 docker compose -f docker-compose.yml up -d
 </code></pre></div>
 <p>This will download two images and start them as two containers: one running a MariaDB server and one running the htcollector.</p>
-<p>By default the htcollector is configured to listen on port 8083 for incoming measurements from the devices,
+<p>By default the htcollector container is configured to listen on port 8083 for incoming measurements from the devices,
 but this can be changed of course (or you can change the configuration of your Shelly HT devices).</p>
 <p>When measurements start getting logged, you can go to the same webserver to get an html page with the last measurements:</p>
-<p><code>http://mymachine:8083/html</code></p>
-<p><img alt="Screenshot " src="https://raw.githubusercontent.com/varkenvarken/shellyhtcollector2/master/documentation/assets/screenshots/screenshot-html.png" /></p>
-<p>An even nicer looking example is available on</p>
 <p><code>http://mymachine:8083/all</code></p>
-<p><img alt="Screenshot " src="https://raw.githubusercontent.com/varkenvarken/shellyhtcollector2/master/documentation/assets/screenshots/screenshot-all.png" /></p>
-<p>These pages refer to two additional urls: <code>static/css/stylesheet.css</code> and <code>static/js/layout.js</code>, which are served by the same server.</p>
-<p>You can also associate a meaningful label with any station, simply go to:</p>
+<p><img alt="Screenshot" src="https://raw.githubusercontent.com/varkenvarken/shellyhtcollector2/master/documentation/assets/screenshots/screenshot-all.png" /></p>
+<p>The image will show the last measurement of any device that has contacted the server, along with the name of the device and the time of the last measurement.
+It also shows a small graph that depicts the temperature in the last 24 hours.</p>
+<p>To associate a label with a station, simply go to:</p>
 <p><code>http://mymachine:8083/names</code></p>
-<p>and click on the device you want to change the label of.</p>
+<p><img alt="Names" src="https://raw.githubusercontent.com/varkenvarken/shellyhtcollector2/master/documentation/assets/screenshots/screenshot-names.png" /></p>
+<p>If you click on the <code>Change</code> link of the device you want to change the label of, you can enter a name.</p>
+<p><img alt="Screenshot" src="https://raw.githubusercontent.com/varkenvarken/shellyhtcollector2/master/documentation/assets/screenshots/screenshot-name.png" /></p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Tested with Docker version 20.10.12, build 20.10.12-0ubuntu2~20.04.1 / Docker Compose version v2.6.0</p>
 </div>
+<h3 id="a-note-on-security">A note on security</h3>
+<p><code>htcollector</code> has <em>no</em> safety features whatsoever: Authentication is not required and connections are not encrypted. Anybody can connect to the server and log measurements and anybody can change device names.</p>
+<p>You could consider running it behind a reverse proxy with https enabled and that would prevent people from eavesdropping on the measurements sent from the devices to the server, and from the name changes, but then you would need to implement some form of authentication as well and that would still not prevent injection of false measurements, even if you would implement some form of whitelisting, because the device ids of Shelly HT devices can be changed, so I did not bother to implement any kind of securit feature.</p>
+<p>What I did do on my home network is to have all my Shelly HT devices connect to a password protected WIFI network that is on a separate VLAN where also the server with htcollector is connected. This does not prevent unwanted access or snooping completely, but would require an attacker to be in range of the WIFI network and crack the encrypted WIFI connection. Not impossible but unlikely to be worth the trouble to intercept a few temperature measurements but if your Shelly devices are interconnected to control other devices you will need to design your security setup with a bit more care perhaps. You have been warned.</p>
+<p>If you would like to implement authentication for example, have a look at the section below so you can adapt the Python package yourself.</p>
 <h2 id="installation-as-a-library">Installation as a library</h2>
-<p>You can of course build your own solution on top of the htcollector module but that takes a few steps. Installing the htcollector package from Pypi is simple enough but it also depends on the MariaDB connector.</p>
-<h3 id="install-mariadb-connector-for-python">Install mariadb connector for Python</h3>
-<p>The <code>mariadb</code> python module is not pure Python and depends on <code>libmariadb</code>, so setup is less straight forward than you would hope:
+<p>You can of course build your own solution on top of the htcollector module but that takes a few steps. Installing the htcollector package from PyPi is simple enough but it also depends on the MariaDB connector.</p>
+<h3 id="install-the-mariadb-connector-for-python">Install the mariadb connector for Python</h3>
+<p>The <code>mariadb</code> python module is not pure Python and depends on <code>libmariadb</code>, so setup is less straight forward than you would hope:</p>
 <div class="highlight"><pre><span></span><code>wget https://downloads.mariadb.com/MariaDB/mariadb_repo_setup
 <span class="nb">echo</span> <span class="s2">&quot;d4e4635eeb79b0e96483bd70703209c63da55a236eadd7397f769ee434d92ca8  mariadb_repo_setup&quot;</span>     <span class="p">|</span> sha256sum -c -
 chmod +x mariadb_repo_setup
@@ -513,7 +702,7 @@ sudo ./mariadb_repo_setup    --mariadb-server-version<span class="o">=</span><sp
 sudo apt install libmariadb3 libmariadb-dev
 sudo python3 -m pip install mariadb
 </code></pre></div>
-Here we have chosen to install it for everyone, but if you used a virtual environment your could do away with the <code>sudo</code>s</p>
+<p>Here we have chosen to install it for everyone, but if you used a virtual environment your could do away with the <code>sudo</code>s</p>
 <h3 id="install-the-package">Install the package</h3>
 <p>Install it directly from PyPi</p>
 <div class="highlight"><pre><span></span><code>pip install htcollector
@@ -527,46 +716,32 @@ python setup.py install
 <p class="admonition-title">Note</p>
 <p>It might be a good idea to do this inside a virtual environment!</p>
 </div>
-<h2 id="running-the-server">Running the server</h2>
-<p>Assuming you have MariaDB running on the same machine with a database (schema) <code>shellyht</code>,
-and that the user defined in the environment variable DBUSER has enough privileges to create a tables,
-the following command will create the necessary tables if not yet present and start listening on port 1883 for incoming connections:
+<h3 id="running-the-server">Running the server</h3>
+<p>Assuming you have MariaDB running on the same machine with a database (schema) <code>shellyht</code>, and that the user defined in the environment variable DBUSER has enough privileges to create a tables, the following command will create the necessary tables if not yet present and start listening on port 1883 for incoming connections:</p>
 <div class="highlight"><pre><span></span><code>nohup python3 -m shellyhtcollector<span class="p">&amp;</span>
-</code></pre></div></p>
-<h2 id="additional-configuration">Additional configuration</h2>
-<p>The reporting tools assume that a table <code>StationidToName</code> exists that contains a mapping between StationId and Name.</p>
-<p>A mapping for a stationid can be added or updated with the mapping tool, for example:</p>
-<div class="highlight"><pre><span></span><code>cd shellyhtcollector; python3 tools/mapping.py &quot;shellyht-6A566F&quot; &quot;dining room&quot;
 </code></pre></div>
-<p>Or, since you have the server running now, simply execute a http get</p>
-<div class="highlight"><pre><span></span><code>http GET &quot;http://localhost:1883/name?id=shellyht-6A566F&amp;name=dining room&quot;
-</code></pre></div>
-<h2 id="generating-reports">Generating reports</h2>
-<p>An html file with the last recorded measurements can be generated with:
-<div class="highlight"><pre><span></span><code>cd shellyhtcollector; python3 tools/last.py --html &gt; index.html
-</code></pre></div></p>
-<p>Both commands assume that you have set two environment variables</p>
-<ul>
-<li>DBUSER</li>
-<li>DBPASSWORD</li>
-</ul>
-<h1 id="api-documentation">API documentation</h1>
+<h2 id="api-documentation">API documentation</h2>
 <p><a href="https://varkenvarken.github.io/shellyhtcollector2/apidoc/htcollector/">Available on the GitHub pages of this repo</a></p>
-<h1 id="architecture-overview">Architecture overview</h1>
+<h2 id="architecture-overview">Architecture overview</h2>
+<p>The archictecture is not very complicated, just a http server and a database, each typically running inside a Docker container:</p>
 <pre class="mermaid"><code>flowchart LR
-    s1[shellyht] --&gt; w[webserver] &lt;--&gt; d[database]
-    s2[shellyht] --&gt; w[webserver]
-    s3[shellyht] --&gt; w[webserver]
-    s4[shellyht] --&gt; w[webserver]</code></pre>
-<h1 id="implementation-details">Implementation details</h1>
+    s1[shellyht] --&gt; docker
+    s2[shellyht] --&gt; docker
+    s3[shellyht] --&gt; docker
+    s4[shellyht] --&gt; docker
+    subgraph docker
+        w[webserver] &lt;--&gt; d[database]
+    end</code></pre>
+<h2 id="implementation-details">Implementation details</h2>
 <p>A ShellyHT can be configured to log temperature and humidity changes to a certain host:port using HTTP. </p>
 <p>The path of a typical GET request will look for example like:</p>
 <div class="highlight"><pre><span></span><code>/sensorlog?hum=54&amp;temp=23.4&amp;id=shellyht-6A566F
 </code></pre></div>
+<p>You will need to configure your Shelly HT devices to connect to the server using this path, so you would typically enter</p>
+<p><code>http://myserver:8083/sensorlog</code> </p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>The Webserver will <em>only</em> accept GET request that have that exact format!
-The '/sensorlog' part needs to be configured in the Shelly HT device</p>
+<p>The Webserver will <em>only</em> accept GET requests that have that exact format!</p>
 </div>
 
               
