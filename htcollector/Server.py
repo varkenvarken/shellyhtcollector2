@@ -17,7 +17,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20220902142722
+#  version: 20221215132615
 
 from json import dumps
 import mimetypes
@@ -46,7 +46,7 @@ class InterceptorHandlerFactory:
     def getHandler(db, static_directory):
         class InterceptorHandler(BaseHTTPRequestHandler):
             querypattern = re.compile(
-                r"^/sensorlog\?hum=(?P<humidity>\d+(\.\d+)?)\&temp=(?P<temperature>\d+(\.\d+)?)\&id=(?P<stationid>[a-z01-9-]+)$",
+                r"^/sensorlog\?hum=(?P<humidity>\d+(\.\d+)?)\&temp=(?P<temperature>-?\d+(\.\d+)?)\&id=(?P<stationid>[a-z01-9-]+)$",
                 re.IGNORECASE,
             )
             htmlpattern = re.compile(
