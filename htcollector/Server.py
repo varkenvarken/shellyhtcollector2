@@ -17,7 +17,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#  version: 20221215132615
+#  version: 20230227132937
 
 from json import dumps
 import mimetypes
@@ -34,6 +34,10 @@ import logging
 
 from .Database import Measurement
 from .Utils import DatetimeEncoder, sanitize_braces
+
+# from memory_profiler import profile
+# memprofile = open("/tmp/memory_profiler.log", "w+")
+import gc
 
 
 class InterceptorHandlerFactory:
@@ -110,6 +114,7 @@ class InterceptorHandlerFactory:
                 )
                 self.send_header("X-Content-Type-Options", "nosniff")
 
+            # @profile(stream=memprofile)
             def do_GET(self):
                 logging.info(self.path)
                 try:
@@ -249,6 +254,7 @@ class InterceptorHandlerFactory:
                     logging.exception(e)
                     self.send_response_only(HTTPStatus.INTERNAL_SERVER_ERROR)
                 self.end_headers()
+                gc.collect()
 
             def do_POST(self):
                 logging.info(self.path)

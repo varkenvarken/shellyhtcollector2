@@ -6,6 +6,8 @@ RUN apt-get install -qy curl ; curl https://downloads.mariadb.com/MariaDB/mariad
 
 CMD ["python",  "-m", "htcollector"]
 
+#CMD ["sleep", "36000"]
+
 COPY . ./ 
 
 RUN python -m pip install -rrequirements.txt
